@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Drawing Pad</title>
+
+<style>
+body{
+    text-align:center;
+    font-family:Arial;
+    background:linear-gradient(135deg,#00c6ff,#0072ff);
+    color:white;
+}
+canvas{
+    background:white;
+    border-radius:10px;
+    margin-top:20px;
+    cursor:crosshair;
+}
+.home-btn{
+    position:absolute;
+    top:15px;
+    left:15px;
+}
+button{
+    padding:8px 12px;
+    margin:10px;
+    border:none;
+    border-radius:6px;
+    cursor:pointer;
+}
+</style>
+</head>
+
+<body>
+
+<button class="home-btn" onclick="location.href='index.html'">🏠 Home</button>
+
+<h1>🎨 Creative Drawing Pad 🎨</h1>
+
+<button onclick="clearCanvas()">Clear</button>
+
+<br>
+<canvas id="canvas" width="400" height="400"></canvas>
+
+<script>
+const canvas = document.getElementById("canvas");
+const ctx = canvas.getContext("2d");
+
+let drawing = false;
+
+/* Desktop Mouse Events */
+canvas.addEventListener("mousedown", startDrawing);
+canvas.addEventListener("mouseup", stopDrawing);
+canvas.addEventListener("mouseleave", stopDrawing);
+canvas.addEventListener("mousemove", draw);
+
+/* Mobile Touch Events */
+canvas.addEventListener("touchstart", startDrawing);
+canvas.addEventListener("touchend", stopDrawing);
+canvas.addEventListener("touchcancel", stopDrawing);
+canvas.addEventListener("touchmove", drawTouch);
+
+function startDrawing(e){
+    drawing = true;
+}
+
+function stopDrawing(){
+    drawing = false;
+    ctx.beginPath(); // reset path
+}
+
+function draw(e){
+    if(!drawing) return;
+
+    ctx.lineWidth = 5;
+    ctx.lineCap = "round";
+    ctx.strokeStyle = "black";
+
+    ctx.lineTo(e.offsetX, e.offsetY);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(e.offsetX, e.offsetY);
+}
+
+/* Mobile drawing */
+function drawTouch(e){
+    if(!drawing) return;
+
+    e.preventDefault(); // stop scrolling
+
+    const rect = canvas.getBoundingClientRect();
+    const touch = e.touches[0];
+
+    const x = touch.clientX - rect.left;
+    const y = touch.clientY - rect.top;
+
+    ctx.lineWidth = 5;
+    ctx.lineCap = "round";
+    ctx.strokeStyle = "black";
+
+    ctx.lineTo(x, y);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(x, y);
+}
+
+function clearCanvas(){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+}
+</script>
+
+</body>
+</html>

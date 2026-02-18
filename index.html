@@ -7,38 +7,64 @@
 <style>
 body{
     margin:0;
-    font-family:Arial;
+    font-family:Arial, sans-serif;
     background:linear-gradient(135deg,#ff9a9e,#fad0c4);
     text-align:center;
     color:white;
 }
 
+/* Main container */
 .container{
-    padding:30px;
+    padding:40px 20px;
 }
 
+/* Grid layout for cards */
+.games-container{
+    display:grid;
+    grid-template-columns:repeat(2, 1fr); /* 2 cards per row */
+    gap:30px;
+    max-width:800px;
+    margin:auto;
+}
+
+/* Card styling */
 .game-card{
     background:white;
     color:black;
-    margin:20px auto;
-    padding:20px;
-    border-radius:12px;
-    width:280px;
+    padding:25px;
+    border-radius:15px;
     cursor:pointer;
-    transition:0.3s;
+    transition:0.3s ease;
+    box-shadow:0 8px 20px rgba(0,0,0,0.15);
 }
 
 .game-card:hover{
-    transform:scale(1.05);
+    transform:translateY(-8px);
+    box-shadow:0 15px 30px rgba(0,0,0,0.25);
 }
 
+/* Button styling */
 button{
-    padding:10px 15px;
+    margin-top:15px;
+    padding:10px 20px;
     border:none;
-    border-radius:6px;
+    border-radius:8px;
     background:#ff9800;
     color:white;
     cursor:pointer;
+    font-size:16px;
+    transition:0.3s;
+}
+
+button:hover{
+    background:#e68900;
+}
+
+/* Mobile view */
+@media (max-width:600px){
+    .games-container{
+        grid-template-columns:1fr; /* 1 card per row on mobile */
+    }
 }
 </style>
 </head>
@@ -48,6 +74,7 @@ button{
 <div class="container">
 <h1>🎮 Debarpita's Game World 🎮</h1>
 
+<div class="games-container">
 <div class="game-card">
     <h2>⌨ Typing Challenge</h2>
     <p>Improve speed and accuracy</p>
@@ -60,6 +87,18 @@ button{
     <button onclick="location.href='memory.html'">Play Now</button>
 </div>
 
+<div class="game-card">
+    <h2>⚡ Math Battle</h2>
+    <p>Solve fast & score high</p>
+    <button onclick="location.href='math.html'">Play Now</button>
+</div>
+
+<div class="game-card">
+    <h2>🎨 Drawing Pad</h2>
+    <p>Create your masterpiece</p>
+    <button onclick="location.href='draw.html'">Play Now</button>
+</div>
+</div>
 </div>
 
 </body>
