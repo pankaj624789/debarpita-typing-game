@@ -19,7 +19,6 @@ body{
     overflow:hidden;
 }
 
-/* Scrolling background */
 #background{
     position:absolute;
     width:200%;
@@ -38,6 +37,7 @@ body{
     bottom:60px;
     left:80px;
     font-size:50px;
+    transition:opacity 0.2s;
 }
 
 .obstacle,.boss{
@@ -49,7 +49,7 @@ body{
 
 .coin{
     position:absolute;
-    bottom:120px;
+    bottom:130px;
     right:-50px;
     font-size:30px;
 }
@@ -103,9 +103,12 @@ let score=0;
 let coins=0;
 let lives=3;
 let level=1;
+let speed=5;
 let highScore=localStorage.getItem("queenHighScore")||0;
 let isJumping=false;
-let speed=5;
+let isInvincible=false;
+
+player.style.bottom="60px";
 
 function updateBoard(){
 document.getElementById("scoreBoard").innerText=
@@ -116,10 +119,20 @@ document.getElementById("scoreBoard").innerText=
 " | 👑 High: "+highScore;
 }
 
+function isColliding(a,b){
+let aRect=a.getBoundingClientRect();
+let bRect=b.getBoundingClientRect();
+return !(
+aRect.top>bRect.bottom ||
+aRect.bottom<bRect.top ||
+aRect.right<bRect.left ||
+aRect.left>bRect.right
+);
+}
+
 document.addEventListener("keydown",e=>{
 if(e.code==="Space") jump();
 });
-
 document.addEventListener("touchstart",jump);
 
 function jump(){
@@ -129,7 +142,7 @@ document.getElementById("jumpSound").play();
 let up=0;
 
 let jumpUp=setInterval(()=>{
-if(up>=130){
+if(up>=140){
 clearInterval(jumpUp);
 let down=setInterval(()=>{
 if(up<=0){
@@ -145,6 +158,26 @@ player.style.bottom=60+up+"px";
 },20);
 }
 
+function takeDamage(){
+if(isInvincible) return;
+isInvincible=true;
+lives--;
+document.getElementById("hitSound").play();
+updateBoard();
+
+let blink=setInterval(()=>{
+player.style.opacity=player.style.opacity==0.3?1:0.3;
+},200);
+
+setTimeout(()=>{
+clearInterval(blink);
+player.style.opacity=1;
+isInvincible=false;
+},1500);
+
+if(lives<=0) gameOver();
+}
+
 function createObstacle(){
 let obs=document.createElement("div");
 obs.classList.add("obstacle");
@@ -155,6 +188,12 @@ let move=setInterval(()=>{
 let right=parseInt(obs.style.right||0);
 obs.style.right=right+speed+"px";
 
+if(isColliding(player,obs)){
+obs.remove();
+clearInterval(move);
+takeDamage();
+}
+
 if(right>window.innerWidth){
 obs.remove();
 clearInterval(move);
@@ -162,18 +201,6 @@ score++;
 if(score%10===0){
 level++;
 speed+=1;
-}
-updateBoard();
-}
-
-if(right>window.innerWidth-150 &&
-parseInt(player.style.bottom)<=80){
-obs.remove();
-clearInterval(move);
-lives--;
-document.getElementById("hitSound").play();
-if(lives<=0){
-gameOver();
 }
 updateBoard();
 }
@@ -190,23 +217,21 @@ let move=setInterval(()=>{
 let right=parseInt(coin.style.right||0);
 coin.style.right=right+speed+"px";
 
-if(right>window.innerWidth){
-coin.remove();
-clearInterval(move);
-}
-
-if(right>window.innerWidth-150 &&
-parseInt(player.style.bottom)>100){
+if(isColliding(player,coin)){
 coins++;
 document.getElementById("coinSound").play();
 coin.remove();
 clearInterval(move);
 updateBoard();
 }
+
+if(right>window.innerWidth){
+coin.remove();
+clearInterval(move);
+}
 },20);
 }
 
-/* Boss Level */
 function createBoss(){
 let boss=document.createElement("div");
 boss.classList.add("boss");
@@ -217,19 +242,15 @@ let move=setInterval(()=>{
 let right=parseInt(boss.style.right||0);
 boss.style.right=right+(speed+2)+"px";
 
+if(isColliding(player,boss)){
+boss.remove();
+clearInterval(move);
+takeDamage();
+}
+
 if(right>window.innerWidth){
 boss.remove();
 clearInterval(move);
-}
-
-if(right>window.innerWidth-200 &&
-parseInt(player.style.bottom)<=90){
-lives--;
-document.getElementById("hitSound").play();
-boss.remove();
-clearInterval(move);
-if(lives<=0) gameOver();
-updateBoard();
 }
 },20);
 }
