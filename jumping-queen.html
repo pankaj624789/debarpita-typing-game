@@ -40,7 +40,7 @@ body{
     position:absolute;
     bottom:0;
     width:100%;
-    height:120px;
+    height:220px;
     background:#4caf50;
     z-index:1;
 }
@@ -48,7 +48,7 @@ body{
 /* 👑 Player (Queen) */
 #player{
     position:absolute;
-    bottom:130px;   /* 10px above ground */
+    bottom:230px;   /* 10px above ground */
     left:80px;
     font-size:55px;
     transition:opacity 0.2s, transform 0.2s;
@@ -60,7 +60,7 @@ body{
 .obstacle,
 .boss{
     position:absolute;
-    bottom:120px;  /* Exactly ground height */
+    bottom:220px;  /* Exactly ground height */
     right:-60px;
     font-size:45px;
     z-index:2;
@@ -69,7 +69,7 @@ body{
 /* 💎 Coins */
 .coin{
     position:absolute;
-    bottom:200px;  /* Floating above */
+    bottom:250px;  /* Floating above */
     right:-50px;
     font-size:35px;
     z-index:2;
@@ -182,11 +182,11 @@ clearInterval(down);
 isJumping=false;
 }
 up-=5;
-player.style.bottom=120+up+"px";
+player.style.bottom=220+up+"px";
 },20);
 }
 up+=5;
-player.style.bottom=120+up+"px";
+player.style.bottom=220+up+"px";
 },20);
 }
 
