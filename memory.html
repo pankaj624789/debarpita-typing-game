@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Memory Game</title>
+
+<style>
+body{
+    font-family:Arial;
+    text-align:center;
+    background:linear-gradient(135deg,#667eea,#764ba2);
+    color:white;
+}
+
+.grid{
+    display:grid;
+    grid-template-columns:repeat(4,80px);
+    gap:10px;
+    justify-content:center;
+    margin-top:20px;
+}
+
+.card{
+    width:80px;
+    height:80px;
+    background:white;
+    color:black;
+    font-size:24px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    cursor:pointer;
+    border-radius:8px;
+}
+
+.home-btn{
+    position:absolute;
+    top:15px;
+    left:15px;
+    padding:8px 12px;
+    background:#ff9800;
+    color:white;
+    border:none;
+    border-radius:6px;
+    cursor:pointer;
+}
+
+</style>
+</head>
+
+<body>
+
+<h1>🧠 Memory Match Game</h1>
+<button class="home-btn" onclick="goHome()">🏠 Home</button>
+
+<div class="grid" id="grid"></div>
+
+<script>
+const emojis = ["🐶","🐱","🐭","🐹","🐰","🦊","🐼","🐨"];
+let cards = [...emojis,...emojis];
+cards.sort(()=>0.5-Math.random());
+
+let first=null;
+let lock=false;
+
+const grid=document.getElementById("grid");
+
+cards.forEach(emoji=>{
+    const card=document.createElement("div");
+    card.classList.add("card");
+    card.dataset.value=emoji;
+    card.innerText="";
+    card.onclick=()=>{
+        if(lock||card.innerText!=="") return;
+
+        card.innerText=emoji;
+
+        if(!first){
+            first=card;
+        }else{
+            if(first.dataset.value===card.dataset.value){
+                first=null;
+            }else{
+                lock=true;
+                setTimeout(()=>{
+                    first.innerText="";
+                    card.innerText="";
+                    first=null;
+                    lock=false;
+                },800);
+            }
+        }
+    };
+    grid.appendChild(card);
+});
+
+function goHome(){
+    window.location.href = "index.html";
+}
+</script>
+
+</body>
+</html>
