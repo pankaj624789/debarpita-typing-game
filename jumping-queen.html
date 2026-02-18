@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Jumping Queen</title>
+
+<style>
+body{
+    margin:0;
+    overflow:hidden;
+    font-family:Arial;
+    background:linear-gradient(to right,#87ceeb,#e0f7ff);
+}
+
+#game{
+    position:relative;
+    width:100vw;
+    height:100vh;
+    overflow:hidden;
+}
+
+/* Scrolling background */
+#background{
+    position:absolute;
+    width:200%;
+    height:100%;
+    background:linear-gradient(to right,#87ceeb,#e0f7ff);
+    animation:scroll 20s linear infinite;
+}
+
+@keyframes scroll{
+    from{transform:translateX(0);}
+    to{transform:translateX(-50%);}
+}
+
+#player{
+    position:absolute;
+    bottom:60px;
+    left:80px;
+    font-size:50px;
+}
+
+.obstacle,.boss{
+    position:absolute;
+    bottom:60px;
+    right:-60px;
+    font-size:40px;
+}
+
+.coin{
+    position:absolute;
+    bottom:120px;
+    right:-50px;
+    font-size:30px;
+}
+
+#ground{
+    position:absolute;
+    bottom:0;
+    width:100%;
+    height:60px;
+    background:#4caf50;
+}
+
+#scoreBoard{
+    position:absolute;
+    top:15px;
+    left:15px;
+    font-size:18px;
+}
+
+.home-btn{
+    position:absolute;
+    top:15px;
+    right:15px;
+    padding:8px 12px;
+    border:none;
+    border-radius:6px;
+    background:#ff9800;
+    color:white;
+    cursor:pointer;
+}
+</style>
+</head>
+
+<body>
+
+<div id="game">
+<div id="background"></div>
+<div id="player">👸</div>
+<div id="ground"></div>
+<div id="scoreBoard"></div>
+<button class="home-btn" onclick="location.href='index.html'">🏠 Home</button>
+</div>
+
+<audio id="jumpSound" src="https://www.soundjay.com/buttons/sounds/button-16.mp3"></audio>
+<audio id="coinSound" src="https://www.soundjay.com/buttons/sounds/button-4.mp3"></audio>
+<audio id="hitSound" src="https://www.soundjay.com/buttons/sounds/button-10.mp3"></audio>
+
+<script>
+let player=document.getElementById("player");
+let score=0;
+let coins=0;
+let lives=3;
+let level=1;
+let highScore=localStorage.getItem("queenHighScore")||0;
+let isJumping=false;
+let speed=5;
+
+function updateBoard(){
+document.getElementById("scoreBoard").innerText=
+"🏆 Score: "+score+
+" | 💎 Coins: "+coins+
+" | ❤️ Lives: "+lives+
+" | 🧠 Level: "+level+
+" | 👑 High: "+highScore;
+}
+
+document.addEventListener("keydown",e=>{
+if(e.code==="Space") jump();
+});
+
+document.addEventListener("touchstart",jump);
+
+function jump(){
+if(isJumping) return;
+isJumping=true;
+document.getElementById("jumpSound").play();
+let up=0;
+
+let jumpUp=setInterval(()=>{
+if(up>=130){
+clearInterval(jumpUp);
+let down=setInterval(()=>{
+if(up<=0){
+clearInterval(down);
+isJumping=false;
+}
+up-=5;
+player.style.bottom=60+up+"px";
+},20);
+}
+up+=5;
+player.style.bottom=60+up+"px";
+},20);
+}
+
+function createObstacle(){
+let obs=document.createElement("div");
+obs.classList.add("obstacle");
+obs.innerText="👾";
+document.getElementById("game").appendChild(obs);
+
+let move=setInterval(()=>{
+let right=parseInt(obs.style.right||0);
+obs.style.right=right+speed+"px";
+
+if(right>window.innerWidth){
+obs.remove();
+clearInterval(move);
+score++;
+if(score%10===0){
+level++;
+speed+=1;
+}
+updateBoard();
+}
+
+if(right>window.innerWidth-150 &&
+parseInt(player.style.bottom)<=80){
+obs.remove();
+clearInterval(move);
+lives--;
+document.getElementById("hitSound").play();
+if(lives<=0){
+gameOver();
+}
+updateBoard();
+}
+},20);
+}
+
+function createCoin(){
+let coin=document.createElement("div");
+coin.classList.add("coin");
+coin.innerText="💎";
+document.getElementById("game").appendChild(coin);
+
+let move=setInterval(()=>{
+let right=parseInt(coin.style.right||0);
+coin.style.right=right+speed+"px";
+
+if(right>window.innerWidth){
+coin.remove();
+clearInterval(move);
+}
+
+if(right>window.innerWidth-150 &&
+parseInt(player.style.bottom)>100){
+coins++;
+document.getElementById("coinSound").play();
+coin.remove();
+clearInterval(move);
+updateBoard();
+}
+},20);
+}
+
+/* Boss Level */
+function createBoss(){
+let boss=document.createElement("div");
+boss.classList.add("boss");
+boss.innerText="🐲";
+document.getElementById("game").appendChild(boss);
+
+let move=setInterval(()=>{
+let right=parseInt(boss.style.right||0);
+boss.style.right=right+(speed+2)+"px";
+
+if(right>window.innerWidth){
+boss.remove();
+clearInterval(move);
+}
+
+if(right>window.innerWidth-200 &&
+parseInt(player.style.bottom)<=90){
+lives--;
+document.getElementById("hitSound").play();
+boss.remove();
+clearInterval(move);
+if(lives<=0) gameOver();
+updateBoard();
+}
+},20);
+}
+
+function gameOver(){
+if(score>highScore){
+localStorage.setItem("queenHighScore",score);
+}
+alert("👑 Game Over!\nScore: "+score+"\nCoins: "+coins);
+location.reload();
+}
+
+updateBoard();
+
+setInterval(createObstacle,2000);
+setInterval(createCoin,3000);
+setInterval(()=>{
+if(level>=3) createBoss();
+},8000);
+
+</script>
+
+</body>
+</html>
