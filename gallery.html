@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Art Gallery</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+body{
+text-align:center;
+font-family:Arial;
+background:linear-gradient(135deg,#ff9a9e,#fad0c4);
+}
+img{
+width:200px;
+margin:10px;
+border-radius:10px;
+box-shadow:0 5px 10px rgba(0,0,0,0.3);
+}
+button{
+padding:8px 12px;
+margin:10px;
+border:none;
+border-radius:8px;
+cursor:pointer;
+background:#ff9800;
+color:white;
+}
+</style>
+</head>
+<body>
+
+<h1>🏆 Debarpita's Art Gallery 🏆</h1>
+<button onclick="location.href='draw.html'">🎨 Back to Studio</button>
+<button onclick="clearGallery()">🗑 Clear Gallery</button>
+
+<div id="gallery"></div>
+
+<script>
+let gallery=JSON.parse(localStorage.getItem("gallery"))||[];
+let container=document.getElementById("gallery");
+
+gallery.forEach(img=>{
+let image=document.createElement("img");
+image.src=img;
+container.appendChild(image);
+});
+
+function clearGallery(){
+localStorage.removeItem("gallery");
+location.reload();
+}
+</script>
+
+</body>
+</html>
