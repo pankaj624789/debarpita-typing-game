@@ -115,8 +115,24 @@ button:hover{
         grid-template-columns:1fr; /* 1 card per row on mobile */
     }
 }
+
+.site-footer {
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    padding: 12px 0;
+
+    background: linear-gradient(90deg, #c4da07, #db3806);
+    color: white;
+
+    font-weight: 500;
+    font-size: 13px;
+
+    box-shadow: 0 -4px 15px rgba(0,0,0,0.2);
+}
 </style>
 </head>
+
 
 <body>
 
@@ -166,6 +182,10 @@ button:hover{
 
 </div>
 </div>
+
+<footer class="site-footer">
+  © <span id="year"></span> All Rights Reserved | Created by: Pankaj Kumar Pandit
+</footer>
 
 </body>
 </html>
