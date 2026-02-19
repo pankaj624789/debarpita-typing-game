@@ -16,9 +16,7 @@
       padding: 10px;
     }
 
-    h1 {
-      color: #e91e63;
-    }
+    h1 { color: #e91e63; }
 
     .container {
       display: flex;
@@ -32,16 +30,14 @@
       height: 90vw;
       max-height: 320px;
       display: grid;
-      grid-template-columns: repeat(4, 1fr);
       gap: 2px;
       margin-top: 15px;
     }
 
     .tile {
-      background-image: url("https://picsum.photos/320");
-      background-size: 320px 320px;
       border-radius: 8px;
       cursor: grab;
+      background-repeat: no-repeat;
     }
 
     button {
@@ -66,7 +62,6 @@
       margin-top: 10px;
       font-weight: bold;
     }
-
   </style>
 </head>
 <body>
@@ -79,10 +74,16 @@
   High Score: <span id="highScore">0</span>
 </div>
 
+<div>
+  <button onclick="setMode(2)">Easy (2x2)</button>
+  <button onclick="setMode(4)">Hard (4x4)</button>
+</div>
+
 <button onclick="shuffle()">Shuffle</button>
 <button onclick="toggleHint()">Hint (-10)</button>
 <button onclick="submitGame()">Submit</button>
 <button onclick="resetGame()">Reset</button>
+<button onclick="changeImage()">Change Image</button>
 <button onclick="quitGame()">Quit</button>
 
 <div class="container">
@@ -102,7 +103,9 @@ const timerDisplay = document.getElementById("timer");
 const highScoreDisplay = document.getElementById("highScore");
 const winSound = document.getElementById("winSound");
 
+let currentImage = "https://picsum.photos/320";
 let tiles = [];
+let gridSize = 2;
 let draggedTile = null;
 let score = 100;
 let time = 0;
@@ -112,6 +115,7 @@ let highScore = localStorage.getItem("highScore") || 0;
 highScoreDisplay.innerText = highScore;
 
 function startTimer() {
+  clearInterval(timerInterval);
   timerInterval = setInterval(() => {
     time++;
     timerDisplay.innerText = time;
@@ -119,20 +123,37 @@ function startTimer() {
 }
 
 function createPuzzle() {
-  for (let i = 0; i < 16; i++) {
+  hintImage.src = currentImage;
+  puzzle.innerHTML = "";
+  tiles = [];
+
+  puzzle.style.gridTemplateColumns = `repeat(${gridSize}, 1fr)`;
+
+  const tileSize = 320 / gridSize;
+
+  for (let i = 0; i < gridSize * gridSize; i++) {
+
     const tile = document.createElement("div");
     tile.classList.add("tile");
     tile.draggable = true;
 
-    const x = (i % 4) * 80;
-    const y = Math.floor(i / 4) * 80;
+    tile.dataset.correctIndex = i;
+    tile.dataset.currentIndex = i;
+
+    tile.style.width = tileSize + "px";
+    tile.style.height = tileSize + "px";
+    tile.style.backgroundSize = "320px 320px";
+    tile.style.backgroundImage = `url(${currentImage})`;
+
+    const x = (i % gridSize) * tileSize;
+    const y = Math.floor(i / gridSize) * tileSize;
+
     tile.style.backgroundPosition = `-${x}px -${y}px`;
 
     tile.addEventListener("dragstart", () => draggedTile = tile);
     tile.addEventListener("dragover", e => e.preventDefault());
     tile.addEventListener("drop", () => swapTiles(draggedTile, tile));
 
-    // Mobile support
     tile.addEventListener("touchstart", () => draggedTile = tile);
     tile.addEventListener("touchend", (e) => {
       const target = document.elementFromPoint(
@@ -150,19 +171,25 @@ function createPuzzle() {
 }
 
 function swapTiles(t1, t2) {
-  const temp = t1.style.backgroundPosition;
+  const tempBg = t1.style.backgroundPosition;
   t1.style.backgroundPosition = t2.style.backgroundPosition;
-  t2.style.backgroundPosition = temp;
+  t2.style.backgroundPosition = tempBg;
+
+  const tempIndex = t1.dataset.currentIndex;
+  t1.dataset.currentIndex = t2.dataset.currentIndex;
+  t2.dataset.currentIndex = tempIndex;
 }
 
 function shuffle() {
+  const totalTiles = gridSize * gridSize;
   for (let i = 0; i < 100; i++) {
-    const a = Math.floor(Math.random() * 16);
-    const b = Math.floor(Math.random() * 16);
+    const a = Math.floor(Math.random() * totalTiles);
+    const b = Math.floor(Math.random() * totalTiles);
     swapTiles(tiles[a], tiles[b]);
   }
   score -= 5;
   updateScore();
+  tiles.forEach(tile => tile.style.border = "none");
 }
 
 function toggleHint() {
@@ -178,11 +205,8 @@ function toggleHint() {
 function submitGame() {
   let wrong = 0;
 
-  tiles.forEach((tile, i) => {
-    const x = (i % 4) * 80;
-    const y = Math.floor(i / 4) * 80;
-
-    if (tile.style.backgroundPosition !== `-${x}px -${y}px`) {
+  tiles.forEach(tile => {
+    if (tile.dataset.currentIndex !== tile.dataset.correctIndex) {
       tile.style.border = "3px solid red";
       wrong++;
     } else {
@@ -198,17 +222,16 @@ function submitGame() {
     let stars = getStars();
 
     setTimeout(() => {
-      alert("🎉 You Win!\nScore: " + score + "\nStars: " + stars);
+      alert("🎉 Perfect! You Win!\nScore: " + score + "\nStars: " + stars);
     }, 300);
 
     if (score > highScore) {
       localStorage.setItem("highScore", score);
       highScoreDisplay.innerText = score;
     }
+
   } else {
-    setTimeout(() => {
-      alert("❌ " + wrong + " tiles are wrong. Fix them!");
-    }, 200);
+    alert("❌ " + wrong + " tiles are incorrect.");
   }
 }
 
@@ -237,15 +260,17 @@ function resetGame() {
   updateScore();
   timerDisplay.innerText = 0;
 
-  clearInterval(timerInterval);
-  startTimer();
-
   hintImage.style.display = "none";
 
+  startTimer();
+
+  const tileSize = 320 / gridSize;
+
   tiles.forEach((tile, i) => {
-    const x = (i % 4) * 80;
-    const y = Math.floor(i / 4) * 80;
+    const x = (i % gridSize) * tileSize;
+    const y = Math.floor(i / gridSize) * tileSize;
     tile.style.backgroundPosition = `-${x}px -${y}px`;
+    tile.dataset.currentIndex = i;
     tile.style.border = "none";
   });
 }
@@ -253,8 +278,20 @@ function resetGame() {
 function quitGame() {
   const confirmQuit = confirm("Are you sure you want to quit?");
   if (confirmQuit) {
-    window.location.href = "index.html"; // change if your homepage name is different
+    location.reload();
   }
+}
+
+function setMode(size) {
+  gridSize = size;
+  resetGame();
+  createPuzzle();
+}
+
+function changeImage() {
+  currentImage = "https://picsum.photos/320?random=" + Math.floor(Math.random() * 1000);
+  resetGame();
+  createPuzzle();
 }
 
 createPuzzle();
