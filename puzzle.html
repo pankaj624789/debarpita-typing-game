@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Super Puzzle Game</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- Confetti Library -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+  <style>
+    body {
+      text-align: center;
+      font-family: Arial;
+      background: #fce4ec;
+      margin: 0;
+      padding: 10px;
+    }
+
+    h1 {
+      color: #e91e63;
+    }
+
+    .container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    #puzzle {
+      width: 90vw;
+      max-width: 320px;
+      height: 90vw;
+      max-height: 320px;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 2px;
+      margin-top: 15px;
+    }
+
+    .tile {
+      background-image: url("https://picsum.photos/320");
+      background-size: 320px 320px;
+      border-radius: 8px;
+      cursor: grab;
+    }
+
+    button {
+      padding: 10px 15px;
+      background: #e91e63;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 14px;
+      margin: 5px;
+    }
+
+    #hintImage {
+      display: none;
+      width: 200px;
+      margin-top: 10px;
+      border-radius: 10px;
+      border: 3px solid #e91e63;
+    }
+
+    #info {
+      margin-top: 10px;
+      font-weight: bold;
+    }
+
+  </style>
+</head>
+<body>
+
+<h1>🧩 Super Puzzle</h1>
+
+<div id="info">
+  Score: <span id="score">100</span> |
+  Time: <span id="timer">0</span>s |
+  High Score: <span id="highScore">0</span>
+</div>
+
+<button onclick="shuffle()">Shuffle</button>
+<button onclick="toggleHint()">Hint (-10)</button>
+<button onclick="submitGame()">Submit</button>
+<button onclick="resetGame()">Reset</button>
+<button onclick="quitGame()">Quit</button>
+
+<div class="container">
+  <div id="puzzle"></div>
+  <img id="hintImage" src="https://picsum.photos/320">
+</div>
+
+<audio id="winSound">
+  <source src="https://www.soundjay.com/buttons/sounds/button-3.mp3" type="audio/mp3">
+</audio>
+
+<script>
+const puzzle = document.getElementById("puzzle");
+const hintImage = document.getElementById("hintImage");
+const scoreDisplay = document.getElementById("score");
+const timerDisplay = document.getElementById("timer");
+const highScoreDisplay = document.getElementById("highScore");
+const winSound = document.getElementById("winSound");
+
+let tiles = [];
+let draggedTile = null;
+let score = 100;
+let time = 0;
+let timerInterval;
+
+let highScore = localStorage.getItem("highScore") || 0;
+highScoreDisplay.innerText = highScore;
+
+function startTimer() {
+  timerInterval = setInterval(() => {
+    time++;
+    timerDisplay.innerText = time;
+  }, 1000);
+}
+
+function createPuzzle() {
+  for (let i = 0; i < 16; i++) {
+    const tile = document.createElement("div");
+    tile.classList.add("tile");
+    tile.draggable = true;
+
+    const x = (i % 4) * 80;
+    const y = Math.floor(i / 4) * 80;
+    tile.style.backgroundPosition = `-${x}px -${y}px`;
+
+    tile.addEventListener("dragstart", () => draggedTile = tile);
+    tile.addEventListener("dragover", e => e.preventDefault());
+    tile.addEventListener("drop", () => swapTiles(draggedTile, tile));
+
+    // Mobile support
+    tile.addEventListener("touchstart", () => draggedTile = tile);
+    tile.addEventListener("touchend", (e) => {
+      const target = document.elementFromPoint(
+        e.changedTouches[0].clientX,
+        e.changedTouches[0].clientY
+      );
+      if (target && target.classList.contains("tile")) {
+        swapTiles(draggedTile, target);
+      }
+    });
+
+    tiles.push(tile);
+    puzzle.appendChild(tile);
+  }
+}
+
+function swapTiles(t1, t2) {
+  const temp = t1.style.backgroundPosition;
+  t1.style.backgroundPosition = t2.style.backgroundPosition;
+  t2.style.backgroundPosition = temp;
+}
+
+function shuffle() {
+  for (let i = 0; i < 100; i++) {
+    const a = Math.floor(Math.random() * 16);
+    const b = Math.floor(Math.random() * 16);
+    swapTiles(tiles[a], tiles[b]);
+  }
+  score -= 5;
+  updateScore();
+}
+
+function toggleHint() {
+  if (hintImage.style.display === "none") {
+    hintImage.style.display = "block";
+    score -= 10;
+    updateScore();
+  } else {
+    hintImage.style.display = "none";
+  }
+}
+
+function submitGame() {
+  let wrong = 0;
+
+  tiles.forEach((tile, i) => {
+    const x = (i % 4) * 80;
+    const y = Math.floor(i / 4) * 80;
+
+    if (tile.style.backgroundPosition !== `-${x}px -${y}px`) {
+      tile.style.border = "3px solid red";
+      wrong++;
+    } else {
+      tile.style.border = "3px solid green";
+    }
+  });
+
+  if (wrong === 0) {
+    clearInterval(timerInterval);
+    winSound.play();
+    launchConfetti();
+
+    let stars = getStars();
+
+    setTimeout(() => {
+      alert("🎉 You Win!\nScore: " + score + "\nStars: " + stars);
+    }, 300);
+
+    if (score > highScore) {
+      localStorage.setItem("highScore", score);
+      highScoreDisplay.innerText = score;
+    }
+  } else {
+    setTimeout(() => {
+      alert("❌ " + wrong + " tiles are wrong. Fix them!");
+    }, 200);
+  }
+}
+
+function getStars() {
+  if (score >= 90) return "⭐⭐⭐";
+  if (score >= 60) return "⭐⭐";
+  return "⭐";
+}
+
+function updateScore() {
+  if (score < 0) score = 0;
+  scoreDisplay.innerText = score;
+}
+
+function launchConfetti() {
+  confetti({
+    particleCount: 150,
+    spread: 70,
+    origin: { y: 0.6 }
+  });
+}
+
+function resetGame() {
+  score = 100;
+  time = 0;
+  updateScore();
+  timerDisplay.innerText = 0;
+
+  clearInterval(timerInterval);
+  startTimer();
+
+  hintImage.style.display = "none";
+
+  tiles.forEach((tile, i) => {
+    const x = (i % 4) * 80;
+    const y = Math.floor(i / 4) * 80;
+    tile.style.backgroundPosition = `-${x}px -${y}px`;
+    tile.style.border = "none";
+  });
+}
+
+function quitGame() {
+  const confirmQuit = confirm("Are you sure you want to quit?");
+  if (confirmQuit) {
+    window.location.href = "index.html"; // change if your homepage name is different
+  }
+}
+
+createPuzzle();
+startTimer();
+updateScore();
+</script>
+
+</body>
+</html>
