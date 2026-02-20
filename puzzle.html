@@ -33,7 +33,21 @@
       gap: 2px;
       margin-top: 15px;
     }
+.shuffle-btn {
+  background-color: #28a745;
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: 0.3s;
+}
 
+.shuffle-btn:hover {
+  background-color: #218838;
+  transform: scale(1.05);
+}
     .tile {
       border-radius: 8px;
       cursor: grab;
@@ -75,11 +89,14 @@
 </div>
 
 <div>
-  <button onclick="setMode(2)">Easy (2x2)</button>
-  <button onclick="setMode(4)">Hard (4x4)</button>
+  <button onclick="setMode(2)">Easy </button>
+  <button onclick="setMode(4)">Hard </button>
 </div>
+<button onclick="shuffle()" class="shuffle-btn">
+  Start
+</button>
 <button onclick="toggleMusic()">🎵 Music</button>
-<button onclick="shuffle()">Shuffle</button>
+
 <button onclick="toggleHint()">Hint (-10)</button>
 <button onclick="submitGame()">Submit</button>
 <button onclick="resetGame()">Reset</button>
@@ -116,6 +133,7 @@ highScoreDisplay.innerText = highScore;
 
 function startTimer() {
   clearInterval(timerInterval);
+
   timerInterval = setInterval(() => {
     time++;
     timerDisplay.innerText = time;
@@ -193,14 +211,29 @@ function swapTiles(t1, t2) {
 }
 
 function shuffle() {
+
   const totalTiles = gridSize * gridSize;
+
+  // 🔄 Shuffle tiles
   for (let i = 0; i < 100; i++) {
     const a = Math.floor(Math.random() * totalTiles);
     const b = Math.floor(Math.random() * totalTiles);
     swapTiles(tiles[a], tiles[b]);
   }
+
+  // 🎯 Reset Timer
+  clearInterval(timerInterval);
+  time = 0;
+  timerDisplay.innerText = time;
+
+  // ▶ Start Timer AFTER shuffle
+  startTimer();
+
+  // ⭐ Score penalty
   score -= 5;
   updateScore();
+
+  // 🎨 Remove tile borders
   tiles.forEach(tile => tile.style.border = "none");
 }
 
