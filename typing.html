@@ -5,70 +5,177 @@
 <title>Debarpita's Typing Game</title>
 
 <style>
-body {
-    margin: 0;
-    font-family: Arial, sans-serif;
-    background: linear-gradient(135deg, #667eea, #764ba2);
-    color: white;
-    text-align: center;
+
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family: 'Poppins', sans-serif;
 }
 
-.container {
-    padding: 15px;
+body{
+    min-height:100vh;
+    background: linear-gradient(-45deg, #1e1e2f, #2c3e50, #1a2980, #000428);
+    background-size: 400% 400%;
+    animation: gradientBG 12s ease infinite;
+    color:white;
+    display:flex;
+    justify-content:center;
+    align-items:center;
 }
 
-#gameArea {
-    position: relative;
-    height: 55vh;
-    overflow: hidden;
-    border: 2px solid white;
-    border-radius: 10px;
-    margin: 15px 0;
+@keyframes gradientBG{
+    0%{background-position:0% 50%;}
+    50%{background-position:100% 50%;}
+    100%{background-position:0% 50%;}
 }
 
-.word {
-    position: absolute;
-    font-weight: bold;
+.container{
+    width:95%;
+    max-width:950px;
+    backdrop-filter: blur(15px);
+    background: rgba(255,255,255,0.08);
+    border-radius:20px;
+    padding:30px;
+    box-shadow: 0 0 40px rgba(0,0,0,0.6);
+    text-align:center;
+    position:relative;
 }
 
-input, select, button {
-    padding: 10px;
-    font-size: 16px;
-    border-radius: 6px;
-    border: none;
-    margin: 5px;
+h1{
+    font-size:28px;
+    margin-bottom:15px;
+    letter-spacing:1px;
+    background: linear-gradient(90deg,#00f5ff,#ff00c8);
+    -webkit-background-clip:text;
+    -webkit-text-fill-color:transparent;
 }
 
-button {
-    cursor: pointer;
-    background: #ff9800;
-    color: white;
+#setup{
+    margin-bottom:15px;
 }
 
-.stats {
-    display: flex;
-    justify-content: center;
-    flex-wrap: wrap;
-    gap: 15px;
-    font-size: 16px;
+input, select{
+    padding:12px;
+    border-radius:8px;
+    border:none;
+    outline:none;
+    font-size:15px;
+    margin:6px;
+    transition:0.3s;
+    background:rgba(255,255,255,0.1);
+    color:white;
+    border:1px solid rgba(255,255,255,0.2);
+}
+
+input:focus, select:focus{
+    border:1px solid #00f5ff;
+    box-shadow:0 0 10px #00f5ff;
+}
+
+button{
+    padding:12px 20px;
+    border:none;
+    border-radius:8px;
+    cursor:pointer;
+    font-weight:bold;
+    transition:0.3s;
+    background:linear-gradient(90deg,#ff8a00,#ff0080);
+    color:white;
+}
+
+button:hover{
+    transform:translateY(-3px);
+    box-shadow:0 8px 20px rgba(255,0,128,0.5);
+}
+
+.home-btn{
+    position:absolute;
+    top:15px;
+    left:15px;
+    padding:8px 14px;
+    font-size:14px;
+}
+
+.stats{
+    display:grid;
+    grid-template-columns: repeat(auto-fit,minmax(120px,1fr));
+    gap:12px;
+    margin:15px 0;
+}
+
+.stats div{
+    background:rgba(255,255,255,0.1);
+    padding:10px;
+    border-radius:12px;
+    backdrop-filter: blur(5px);
+    font-weight:bold;
+    border:1px solid rgba(255,255,255,0.15);
+}
+
+#gameArea{
+    position:relative;
+    height:50vh;
+    border-radius:15px;
+    overflow:hidden;
+    border:1px solid rgba(255,255,255,0.2);
+    background:rgba(0,0,0,0.3);
+}
+
+.word{
+    position:absolute;
+    font-weight:bold;
+    font-size:18px;
+    padding:4px 8px;
+    border-radius:8px;
+    background:linear-gradient(45deg,#00f5ff,#ff00c8);
+    color:white;
+    box-shadow:0 0 10px rgba(0,255,255,0.7);
+    animation: glow 1.5s infinite alternate;
+}
+
+@keyframes glow{
+    from{ box-shadow:0 0 5px #00f5ff; }
+    to{ box-shadow:0 0 20px #ff00c8; }
+}
+
+#inputBox{
+    margin-top:15px;
+    width:80%;
+    max-width:400px;
+}
+
+#gameOver{
+    margin-top:15px;
+    font-size:22px;
+    color:#ff4c4c;
+    font-weight:bold;
+}
+
+#restartBtn{
+    margin-top:10px;
 }
 
 @media(max-width:600px){
-    .stats{
-        flex-direction: column;
+    .container{
+        padding:20px;
+    }
+    h1{
+        font-size:22px;
     }
 }
+
+
 </style>
 </head>
-
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 <body>
 
 <div class="container">
 
 <h1>🚀 Debarpita's Typing Challenge 🚀</h1>
-<button onclick="goHome()" style="position:absolute; top:15px; left:15px;">
-🏠 Home
-</button>
+<button class="home-btn" onclick="goHome()">🏠 Home</button>
 
 <div id="setup">
     <input type="text" id="playerName" placeholder="Enter Your Name">
@@ -255,10 +362,11 @@ function endGame(){
     let highScore =
     localStorage.getItem("highScore") || 0;
 
-    if(score>highScore){
-        localStorage.setItem("highScore",score);
-        highScore=score;
-    }
+   if(score>highScore){
+    localStorage.setItem("highScore",score);
+    highScore=score;
+    confetti();
+}
 
     document.getElementById("highScore").innerText=highScore;
 
