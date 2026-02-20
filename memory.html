@@ -2,101 +2,312 @@
 <html>
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Memory Game</title>
+<title>Memory Game Ultimate</title>
 
 <style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:'Poppins',sans-serif;
+}
+
 body{
-    font-family:Arial;
-    text-align:center;
-    background:linear-gradient(135deg,#667eea,#764ba2);
+    min-height:100vh;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    transition:0.4s;
     color:white;
+}
+
+/* THEMES */
+body.theme1{
+    background:linear-gradient(-45deg,#1e1e2f,#2c3e50,#1a2980,#000428);
+}
+body.theme2{
+    background:linear-gradient(135deg,#ff9a9e,#fad0c4);
+}
+body.theme3{
+    background:linear-gradient(135deg,#00c6ff,#0072ff);
+}
+
+.container{
+    backdrop-filter:blur(15px);
+    background:rgba(255,255,255,0.1);
+    padding:25px;
+    border-radius:20px;
+    text-align:center;
+    width:95%;
+    max-width:600px;
+    box-shadow:0 0 40px rgba(0,0,0,0.5);
+}
+
+h1{
+    margin-bottom:10px;
+}
+
+.controls{
+    margin-bottom:10px;
+}
+
+select{
+    padding:6px;
+    border-radius:6px;
+    border:none;
+    margin:5px;
+}
+
+.stats{
+    display:flex;
+    justify-content:space-around;
+    margin:10px 0;
+    font-weight:bold;
 }
 
 .grid{
     display:grid;
-    grid-template-columns:repeat(4,80px);
     gap:10px;
-    justify-content:center;
-    margin-top:20px;
 }
 
 .card{
-    width:80px;
-    height:80px;
-    background:white;
-    color:black;
-    font-size:24px;
-    display:flex;
-    align-items:center;
-    justify-content:center;
+    aspect-ratio:1/1;
+    perspective:1000px;
     cursor:pointer;
-    border-radius:8px;
 }
 
-.home-btn{
+.card-inner{
+    width:100%;
+    height:100%;
+    position:relative;
+    transform-style:preserve-3d;
+    transition:0.6s;
+}
+
+.card.flip .card-inner{
+    transform:rotateY(180deg);
+}
+
+.card-front,.card-back{
     position:absolute;
-    top:15px;
-    left:15px;
-    padding:8px 12px;
-    background:#ff9800;
-    color:white;
+    width:100%;
+    height:100%;
+    border-radius:12px;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    font-size:26px;
+    backface-visibility:hidden;
+}
+
+.card-front{
+    background:linear-gradient(45deg,#ff8a00,#ff0080);
+}
+
+.card-back{
+    background:white;
+    color:black;
+    transform:rotateY(180deg);
+}
+
+button{
+    margin-top:10px;
+    padding:8px 15px;
     border:none;
-    border-radius:6px;
+    border-radius:8px;
     cursor:pointer;
+    font-weight:bold;
+}
+
+.modal{
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,0.7);
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    visibility:hidden;
+}
+
+.modal.active{
+    visibility:visible;
+}
+
+.modal-content{
+    background:white;
+    color:black;
+    padding:25px;
+    border-radius:15px;
+    text-align:center;
 }
 
 </style>
 </head>
 
-<body>
+<body class="theme1">
 
-<h1>🧠 Memory Match Game</h1>
-<button class="home-btn" onclick="goHome()">🏠 Home</button>
+<div class="container">
+
+<h1>🧠 Memory Game Ultimate</h1>
+
+<div class="controls">
+    Difficulty:
+    <select id="difficulty" onchange="restartGame()">
+        <option value="4">4x4 (Easy)</option>
+        <option value="6">6x6 (Hard)</option>
+    </select>
+
+    Theme:
+    <select onchange="changeTheme(this.value)">
+        <option value="theme1">Dark</option>
+        <option value="theme2">Pink</option>
+        <option value="theme3">Blue</option>
+    </select>
+</div>
+
+<div class="stats">
+    <div>⏱ <span id="timer">0</span>s</div>
+    <div>🎯 Moves: <span id="moves">0</span></div>
+    <div>🏆 Best: <span id="best">0</span></div>
+</div>
 
 <div class="grid" id="grid"></div>
 
+<button onclick="restartGame()">🔄 Restart</button>
+<button onclick="quitGame()">Quit</button>
+
+</div>
+
+<div class="modal" id="winModal">
+    <div class="modal-content">
+        <h2>🎉 You Win!</h2>
+        <p id="result"></p>
+        <button onclick="restartGame()">Play Again</button>
+    </div>
+</div>
+
+<!-- Sounds -->
+<audio id="flipSound" src="https://www.soundjay.com/buttons/sounds/button-16.mp3"></audio>
+<audio id="matchSound" src="https://www.soundjay.com/buttons/sounds/button-3.mp3"></audio>
+<audio id="winSound" src="https://www.soundjay.com/misc/sounds/bell-ringing-05.mp3"></audio>
+
+<!-- Confetti -->
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
 <script>
-const emojis = ["🐶","🐱","🐭","🐹","🐰","🦊","🐼","🐨"];
-let cards = [...emojis,...emojis];
-cards.sort(()=>0.5-Math.random());
 
-let first=null;
-let lock=false;
-
+let emojis=["🐶","🐱","🐭","🐹","🐰","🦊","🐼","🐨","🦁","🐯","🐮","🐷","🐸","🐵","🐔","🦄","🐙","🐳"];
+let first=null, lock=false, moves=0, matches=0, seconds=0, timerInterval;
 const grid=document.getElementById("grid");
 
-cards.forEach(emoji=>{
-    const card=document.createElement("div");
-    card.classList.add("card");
-    card.dataset.value=emoji;
-    card.innerText="";
-    card.onclick=()=>{
-        if(lock||card.innerText!=="") return;
+document.getElementById("best").innerText=localStorage.getItem("bestScore")||0;
 
-        card.innerText=emoji;
+function startGame(){
+    grid.innerHTML="";
+    first=null; lock=false; moves=0; matches=0; seconds=0;
+    document.getElementById("moves").innerText=0;
+    document.getElementById("timer").innerText=0;
 
-        if(!first){
-            first=card;
-        }else{
-            if(first.dataset.value===card.dataset.value){
-                first=null;
+    clearInterval(timerInterval);
+    timerInterval=setInterval(()=>{
+        seconds++;
+        document.getElementById("timer").innerText=seconds;
+    },1000);
+
+    let size=parseInt(document.getElementById("difficulty").value);
+    grid.style.gridTemplateColumns=`repeat(${size},1fr)`;
+
+    let needed=(size*size)/2;
+    let selected=emojis.slice(0,needed);
+    let cards=[...selected,...selected].sort(()=>0.5-Math.random());
+
+    cards.forEach(emoji=>{
+        const card=document.createElement("div");
+        card.classList.add("card");
+        card.dataset.value=emoji;
+
+        card.innerHTML=`
+            <div class="card-inner">
+                <div class="card-front">?</div>
+                <div class="card-back">${emoji}</div>
+            </div>
+        `;
+
+        card.onclick=()=>{
+            if(lock||card.classList.contains("flip")) return;
+
+            document.getElementById("flipSound").play();
+            card.classList.add("flip");
+
+            if(!first){
+                first=card;
             }else{
-                lock=true;
-                setTimeout(()=>{
-                    first.innerText="";
-                    card.innerText="";
-                    first=null;
-                    lock=false;
-                },800);
-            }
-        }
-    };
-    grid.appendChild(card);
-});
+                moves++;
+                document.getElementById("moves").innerText=moves;
 
-function goHome(){
-    window.location.href = "index.html";
+                if(first.dataset.value===card.dataset.value){
+                    document.getElementById("matchSound").play();
+                    matches++;
+                    first=null;
+
+                    if(matches===needed){
+                        winGame();
+                    }
+                }else{
+                    lock=true;
+                    setTimeout(()=>{
+                        first.classList.remove("flip");
+                        card.classList.remove("flip");
+                        first=null;
+                        lock=false;
+                    },800);
+                }
+            }
+        };
+
+        grid.appendChild(card);
+    });
 }
+
+function winGame(){
+    clearInterval(timerInterval);
+    document.getElementById("winSound").play();
+
+    let score=Math.max(1000 - (moves*10 + seconds*5),100);
+    let best=localStorage.getItem("bestScore")||0;
+
+    if(score>best){
+        localStorage.setItem("bestScore",score);
+        document.getElementById("best").innerText=score;
+    }
+
+    document.getElementById("result").innerText=
+    `Time: ${seconds}s | Moves: ${moves} | Score: ${score}`;
+
+    document.getElementById("winModal").classList.add("active");
+
+    confetti({particleCount:150,spread:100});
+}
+
+function restartGame(){
+    document.getElementById("winModal").classList.remove("active");
+    startGame();
+}
+
+function changeTheme(theme){
+    document.body.className=theme;
+}
+
+
+startGame();
+
+function quitGame() {
+  const confirmQuit = confirm("Are you sure you want to quit?");
+  if (confirmQuit) {
+    window.location.href = "index.html";
+  }
+}
+
 </script>
 
 </body>
