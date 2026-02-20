@@ -126,16 +126,63 @@ function draw(e){
     const currentY = (e.touches ? e.touches[0].clientY : e.clientY) - rect.top;
 
     if(tool === "pen"){
-        ctx.lineWidth = brushSize;
-        ctx.lineCap = "round";
-        ctx.strokeStyle = currentColor;
+    ctx.lineWidth = brushSize;
+    ctx.lineCap = "round";
 
-        ctx.lineTo(currentX, currentY);
-        ctx.stroke();
-        ctx.beginPath();
-        ctx.moveTo(currentX, currentY);
-        return;
+    if(glitter){
+        // ✨ Random glitter colors
+        const colors = ["#ff00ff","#00ffff","#ffff00","#ff1493","#00ff00"];
+        ctx.strokeStyle = colors[Math.floor(Math.random() * colors.length)];
+    } else {
+        ctx.strokeStyle = currentColor;
     }
+
+    ctx.lineTo(currentX, currentY);
+    ctx.stroke();
+
+    // ✨ Extra sparkles
+// ✨ Extra sparkles (MORE + BETTER)
+if(glitter){
+    for(let i = 0; i < 15; i++){   // 🔥 increase sparkle count
+        
+        const offsetX = (Math.random() - 0.5) * 25;
+        const offsetY = (Math.random() - 0.5) * 25;
+        const size = Math.random() * 3 + 1;
+
+        const sparkleColors = [
+            "#ffffff",
+            "#ffff99",
+            "#ffccff",
+            "#99ffff",
+            "#ff99ff"
+        ];
+
+        ctx.beginPath();
+        ctx.arc(
+            currentX + offsetX,
+            currentY + offsetY,
+            size,
+            0,
+            Math.PI * 2
+        );
+
+        ctx.fillStyle = sparkleColors[Math.floor(Math.random() * sparkleColors.length)];
+        
+        // ✨ Glow effect
+        ctx.shadowColor = ctx.fillStyle;
+        ctx.shadowBlur = 10;
+
+        ctx.fill();
+    }
+
+    // Reset shadow after glitter
+    ctx.shadowBlur = 0;
+}
+
+    ctx.beginPath();
+    ctx.moveTo(currentX, currentY);
+    return;
+}
 
     // 🔥 Restore previous canvas
     ctx.putImageData(snapshot, 0, 0);

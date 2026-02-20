@@ -78,7 +78,7 @@
   <button onclick="setMode(2)">Easy (2x2)</button>
   <button onclick="setMode(4)">Hard (4x4)</button>
 </div>
-
+<button onclick="toggleMusic()">🎵 Music</button>
 <button onclick="shuffle()">Shuffle</button>
 <button onclick="toggleHint()">Hint (-10)</button>
 <button onclick="submitGame()">Submit</button>
@@ -91,8 +91,8 @@
   <img id="hintImage" src="https://picsum.photos/320">
 </div>
 
-<audio id="winSound">
-  <source src="https://www.soundjay.com/buttons/sounds/button-3.mp3" type="audio/mp3">
+<audio id="bgMusic" loop>
+  <source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" type="audio/mpeg">
 </audio>
 
 <script>
@@ -101,7 +101,7 @@ const hintImage = document.getElementById("hintImage");
 const scoreDisplay = document.getElementById("score");
 const timerDisplay = document.getElementById("timer");
 const highScoreDisplay = document.getElementById("highScore");
-const winSound = document.getElementById("winSound");
+const bgMusic = document.getElementById("bgMusic");
 
 let currentImage = "https://picsum.photos/320";
 let tiles = [];
@@ -120,6 +120,18 @@ function startTimer() {
     time++;
     timerDisplay.innerText = time;
   }, 1000);
+}
+
+function toggleMusic() {
+  if (bgMusic.paused) {
+    bgMusic.play();
+  } else {
+    bgMusic.pause();
+  }
+}
+
+function startGame(){
+   bgMusic.play();
 }
 
 function createPuzzle() {
@@ -278,7 +290,7 @@ function resetGame() {
 function quitGame() {
   const confirmQuit = confirm("Are you sure you want to quit?");
   if (confirmQuit) {
-    location.reload();
+    window.location.href = "index.html";
   }
 }
 
