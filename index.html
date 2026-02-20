@@ -36,8 +36,8 @@ h1 {
 
 /* Glow Animation */
 @keyframes glowPulse {
-    from { text-shadow: 0 0 10px rgba(33, 230, 230, 0.6); }
-    to   { text-shadow: 0 0 25px rgba(8, 253, 212, 0.9); }
+    from { text-shadow: 0 0 10px rgba(2, 18, 243, 0.6); }
+    to   { text-shadow: 0 0 25px rgba(8, 24, 253, 0.973); }
 }
 
 .title-bar {
@@ -61,6 +61,30 @@ h1 {
     z-index: 999;
 }
 
+#welcomePopup {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: linear-gradient(135deg, #ff4081, #e91e63);
+  color: white;
+  padding: 30px 50px;
+  border-radius: 20px;
+  font-size: 22px;
+  font-weight: bold;
+  box-shadow: 0 15px 40px rgba(0,0,0,0.3);
+  text-align: center;
+  opacity: 0;
+  animation: welcomeFade 5s ease forwards;
+  z-index: 9999;
+}
+
+@keyframes welcomeFade {
+  0%   { opacity: 0; transform: translate(-50%, -60%) scale(0.8); }
+  15%  { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+  85%  { opacity: 1; }
+  100% { opacity: 0; transform: translate(-50%, -40%) scale(0.9); }
+}
 /* Main container */
 .container{
     padding:40px 20px;
@@ -152,17 +176,32 @@ button:hover{
 </style>
 </head>
 
+<script>
+window.addEventListener("load", function() {
+  setTimeout(() => {
+    document.getElementById("welcomePopup").style.display = "none";
+    document.getElementById("gamesContainer").style.display = "grid";
+  }, 4000);
+});
+</script>
 
 <body>
+
+
 
 <div class="container">
 
 <div class="title-bar">
-  <h1>Debarpita's Game World</h1>
+  <h1>Debarpita's Gaming World!</h1>
 </div>   
 
+<div id="welcomePopup">
+  🎮 Welcome to Debarpita's Gaming World! 🎉  
+  <br>
+  Choose a game & Have Fun! 🧩✨
+</div>
 
-<div class="games-container">
+<div class="games-container" id="gamesContainer" style="display:none;">
 <div class="game-card">
     <h2>⌨ Typing Challenge</h2>
     <p>Improve speed and accuracy</p>
