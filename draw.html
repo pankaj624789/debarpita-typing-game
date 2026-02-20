@@ -48,7 +48,6 @@ button,input,select{
 
 <body>
 
-<button class="home-btn" onclick="location.href='index.html'">🏠 Home</button>
 
 <h1>🎨 Debarpita's Creative Studio 🎨</h1>
 
@@ -76,6 +75,7 @@ button,input,select{
 <button onclick="saveImage()">💾 Save</button>
 <button onclick="clearCanvas()">🗑 Clear</button>
 <button onclick="goGallery()">🏆 Gallery</button>
+<button onclick="quitGame()">Quit</button>
 </div>
 
 <canvas id="canvas" width="500" height="400"></canvas>
@@ -97,21 +97,16 @@ let tool = "pen";
 let startX, startY;
 let snapshot;
 
+// Mouse
 canvas.addEventListener("mousedown", startDraw);
+canvas.addEventListener("mousemove", draw);
 canvas.addEventListener("mouseup", endDraw);
 canvas.addEventListener("mouseleave", stopDraw);
-canvas.addEventListener("mousemove", draw);
 
+// Touch
 canvas.addEventListener("touchstart", startDraw);
-canvas.addEventListener("touchend", endDraw);
 canvas.addEventListener("touchmove", drawTouch);
-canvas.addEventListener("mouseup",stopDraw);
-canvas.addEventListener("mouseleave",stopDraw);
-canvas.addEventListener("mousemove",draw);
-
-canvas.addEventListener("touchstart",()=>drawing=true);
-canvas.addEventListener("touchend",stopDraw);
-canvas.addEventListener("touchmove",drawTouch);
+canvas.addEventListener("touchend", endDraw);
 
 function stopDraw(){
 drawing=false;
@@ -296,12 +291,14 @@ function endDraw(e){
 }
 
 function setEraser(){
-currentColor="white";
-glitter=false;
+    tool = "pen";
+    glitter = false;
+    ctx.globalCompositeOperation = "destination-out";
 }
 
 function setGlitter(){
-glitter=true;
+    tool = "pen";   // 🔥 force pen mode
+    glitter = true;
 }
 
 function changeBackground(theme){
@@ -365,10 +362,19 @@ function loadBackground(event){
     }
     reader.readAsDataURL(event.target.files[0]);
 }
+
 function setTool(selectedTool){
     tool = selectedTool;
+    glitter = false;
+    ctx.globalCompositeOperation = "source-over"; // 🔥 restore normal mode
 }
 
+function quitGame() {
+  const confirmQuit = confirm("Are you sure you want to quit?");
+  if (confirmQuit) {
+    window.location.href = "index.html";
+  }
+}
 
 </script>
 
