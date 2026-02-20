@@ -48,8 +48,16 @@ h1{
     margin-bottom:15px;
     letter-spacing:1px;
     background: linear-gradient(90deg,#00f5ff,#ff00c8);
-    -webkit-background-clip:text;
-    -webkit-text-fill-color:transparent;
+
+    /* Standard property */
+    background-clip: text;
+
+    /* Webkit support (Chrome, Safari, Edge) */
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+
+    /* Fallback */
+    color: white;
 }
 
 #setup{
@@ -174,7 +182,7 @@ button:hover{
 
 <div class="container">
 
-<h1>🚀 Debarpita's Typing Challenge 🚀</h1>
+<h1>🚀 Typing Challenge 🚀</h1>
 <button class="home-btn" onclick="goHome()">🏠 Home</button>
 
 <div id="setup">
@@ -215,7 +223,7 @@ let words = [];
 
 let score = 0;
 let lives = 20;
-let timeLeft = 60;
+let timeLeft = 120;
 let speed = 1;
 let activeWords = [];
 let gameInterval, moveInterval, timerInterval;
@@ -277,9 +285,9 @@ async function startGame(){
     inputBox.disabled=false;
     inputBox.focus();
 
-    if(level==="easy"){ speed=1; timeLeft=60; }
-    if(level==="medium"){ speed=1.5; timeLeft=45; }
-    if(level==="hard"){ speed=2; timeLeft=30; }
+    if(level==="easy"){ speed=1; timeLeft=120; }
+    if(level==="medium"){ speed=1.5; timeLeft=60; }
+    if(level==="hard"){ speed=2; timeLeft=60; }
 
     document.getElementById("time").innerText=timeLeft;
 
