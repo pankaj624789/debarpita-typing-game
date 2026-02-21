@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Real Snake Game</title>
+
+<style>
+body{
+    margin:0;
+    font-family:Arial;
+    text-align:center;
+    background:linear-gradient(135deg,#11998e,#38ef7d);
+    color:white;
+}
+h1{margin-top:15px;}
+#score{font-size:20px;margin-bottom:10px;}
+canvas{
+    background:#111;
+    border-radius:12px;
+    box-shadow:0 0 20px rgba(0,0,0,0.5);
+}
+button{
+    padding:10px 20px;
+    border:none;
+    border-radius:8px;
+    font-size:16px;
+    margin-top:15px;
+    cursor:pointer;
+    background:#ff9800;
+    color:white;
+}
+</style>
+</head>
+
+<body>
+
+<h1>🐍 Real Snake Game</h1>
+<div id="score">Score: 0</div>
+<canvas id="game" width="400" height="400"></canvas>
+<br>
+<button onclick="restartGame()">Restart</button>
+<button onclick="quitGame()">Quit</button>
+
+<script>
+const canvas = document.getElementById("game");
+const ctx = canvas.getContext("2d");
+// 🔊 SOUND SYSTEM
+const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+function playSound(frequency, duration, type="sine"){
+    const oscillator = audioCtx.createOscillator();
+    const gainNode = audioCtx.createGain();
+
+    oscillator.type = type;
+    oscillator.frequency.value = frequency;
+    oscillator.connect(gainNode);
+    gainNode.connect(audioCtx.destination);
+
+    oscillator.start();
+
+    gainNode.gain.setValueAtTime(0.2, audioCtx.currentTime);
+    gainNode.gain.exponentialRampToValueAtTime(
+        0.001,
+        audioCtx.currentTime + duration
+    );
+
+    oscillator.stop(audioCtx.currentTime + duration);
+}
+const box = 20;
+let snake, food, direction, score, game, speed;
+
+function initGame(){
+    snake = [{x:200,y:200}];
+    direction = null;
+    score = 0;
+    speed = 250;
+    document.getElementById("score").innerText="Score: "+score;
+
+    food = randomFood();
+    clearInterval(game);
+    game = setInterval(draw, speed);
+}
+
+function randomFood(){
+    return {
+        x: Math.floor(Math.random()*20)*box,
+        y: Math.floor(Math.random()*20)*box
+    };
+}
+
+document.addEventListener("keydown",(e)=>{
+    if(e.key==="ArrowUp" && direction!=="down") direction="up";
+    if(e.key==="ArrowDown" && direction!=="up") direction="down";
+    if(e.key==="ArrowLeft" && direction!=="right") direction="left";
+    if(e.key==="ArrowRight" && direction!=="left") direction="right";
+});
+
+function drawCircle(x,y,color,radius=9){
+    ctx.fillStyle=color;
+    ctx.beginPath();
+    ctx.arc(x+10,y+10,radius,0,Math.PI*2);
+    ctx.fill();
+}
+
+function drawSnake(){
+    for(let i=0;i<snake.length;i++){
+        drawCircle(snake[i].x, snake[i].y, i===0?"#00ff88":"#00cc66");
+    }
+
+    // Eyes
+    let head = snake[0];
+    ctx.fillStyle="white";
+    ctx.beginPath();
+    ctx.arc(head.x+6, head.y+6, 3, 0, Math.PI*2);
+    ctx.arc(head.x+14, head.y+6, 3, 0, Math.PI*2);
+    ctx.fill();
+}
+
+function draw(){
+    ctx.fillStyle="#111";
+    ctx.fillRect(0,0,400,400);
+
+    drawSnake();
+    drawCircle(food.x, food.y, "red",7);
+
+    let headX = snake[0].x;
+    let headY = snake[0].y;
+
+    if(direction==="up") headY-=box;
+    if(direction==="down") headY+=box;
+    if(direction==="left") headX-=box;
+    if(direction==="right") headX+=box;
+
+    if(headX===food.x && headY===food.y){
+        score++;
+        playSound(600, 0.1, "square");
+        document.getElementById("score").innerText="Score: "+score;
+        food=randomFood();
+        if(speed>60){
+            speed-=5;
+            clearInterval(game);
+            game=setInterval(draw,speed);
+        }
+    }else{
+        snake.pop();
+    }
+
+    const newHead={x:headX,y:headY};
+
+    if(
+        headX<0||headY<0||
+        headX>=400||headY>=400||
+        collision(newHead,snake)
+    ){
+        clearInterval(game);
+        playSound(150, 0.5, "sawtooth"); // Game over sound
+setTimeout(()=>{
+    alert("Game Over! Score: "+score);
+},300);
+    }
+
+    snake.unshift(newHead);
+}
+
+function collision(head,array){
+    return array.some(segment=>segment.x===head.x && segment.y===head.y);
+}
+
+function restartGame(){
+    initGame();
+}
+
+initGame();
+
+function quitGame() {
+  const confirmQuit = confirm("Are you sure you want to quit?");
+  if (confirmQuit) {
+    window.location.href = "index.html";
+  }
+}
+
+</script>
+
+</body>
+</html>
