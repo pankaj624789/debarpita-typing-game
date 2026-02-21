@@ -221,6 +221,12 @@ let highScore=localStorage.getItem("queenHighScore")||0;
 let isGameOver=false;
 let obstacleInterval;
 let coinInterval;
+let obstacleTypes = [
+    { emoji: "👾", height: 210 },
+    { emoji: "🛸", height: 250 },
+    { emoji: "💣", height: 300 },
+    { emoji: "🔥", height: 200 }
+];
 
 function updateBoard(){
 document.getElementById("scoreBoard").innerText=
@@ -277,10 +283,13 @@ if(isGameOver) return;
 
 let obs=document.createElement("div");
 obs.classList.add("obstacle");
-obs.innerText="👾";
 
-let randomHeight=[200,250,300];
-obs.style.bottom=randomHeight[Math.floor(Math.random()*3)]+"px";
+// Pick random obstacle
+let randomObs = obstacleTypes[Math.floor(Math.random()*obstacleTypes.length)];
+
+obs.innerText = randomObs.emoji;
+obs.style.bottom = randomObs.height + "px";
+obs.style.right = "0px";
 
 document.getElementById("game").appendChild(obs);
 
@@ -302,14 +311,21 @@ takeDamage();
 }
 
 if(right>window.innerWidth){
-obs.remove();
-clearInterval(move);
-score++;
-if(score%10===0){
-level++;
-speed+=1;
-}
-updateBoard();
+    obs.remove();
+    clearInterval(move);
+    score++;
+
+    // Increase speed every 5 points
+    if(score % 5 === 0){
+        speed += 1;
+    }
+
+    // Increase level every 10 points
+    if(score % 10 === 0){
+        level++;
+    }
+
+    updateBoard();
 }
 
 },20);
