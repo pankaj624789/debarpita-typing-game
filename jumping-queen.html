@@ -8,11 +8,11 @@
 body{
     margin:0;
     overflow:hidden;
-    font-family:Arial, sans-serif;
-    background:linear-gradient(to right,#87ceeb,#e0f7ff);
+    font-family:'Segoe UI',sans-serif;
+    background:linear-gradient(135deg,#4facfe,#00f2fe);
 }
 
-/* Main Game Container */
+/* GAME AREA */
 #game{
     position:relative;
     width:100vw;
@@ -20,92 +20,90 @@ body{
     overflow:hidden;
 }
 
-/* 🌈 Scrolling Sky Background */
+/* Animated Background */
 #background{
     position:absolute;
     width:200%;
     height:100%;
-    background:linear-gradient(to right,#87ceeb,#e0f7ff);
-    animation:scroll 20s linear infinite;
+    background:linear-gradient(90deg,#4facfe,#00f2fe,#4facfe);
+    background-size:200% 100%;
+    animation:skyMove 15s linear infinite;
     z-index:0;
 }
 
-@keyframes scroll{
+@keyframes skyMove{
     from{transform:translateX(0);}
     to{transform:translateX(-50%);}
 }
 
-/* 🌿 Ground */
+/* Ground */
 #ground{
     position:absolute;
     bottom:0;
     width:100%;
-    height:220px;
-    background:#4caf50;
-    z-index:1;
+    height:200px;
+    background:linear-gradient(#2e7d32,#1b5e20);
+    box-shadow:0 -5px 20px rgba(0,0,0,0.3);
 }
 
-/* 👑 Player (Queen) */
+/* Player */
 #player{
     position:absolute;
-    bottom:230px;   /* 10px above ground */
-    left:80px;
-    font-size:55px;
-    transition:opacity 0.2s, transform 0.2s;
-    z-index:2;
-    filter: drop-shadow(0 0 5px gold);
+    bottom:200px;
+    left:100px;
+    font-size:60px;
+    z-index:3;
+    transition:transform 0.1s;
 }
 
-/* 👾 Obstacles & Boss */
-.obstacle,
-.boss{
+/* Obstacles */
+.obstacle{
     position:absolute;
-    bottom:220px;  /* Exactly ground height */
     right:-60px;
     font-size:45px;
-    z-index:2;
+    z-index:3;
 }
 
-/* 💎 Coins */
+/* Coins */
 .coin{
     position:absolute;
-    bottom:250px;  /* Floating above */
-    right:-50px;
+    right:-40px;
     font-size:35px;
-    z-index:2;
-    animation:coinFloat 1s infinite alternate ease-in-out;
+    animation:float 1s infinite alternate;
 }
 
-@keyframes coinFloat{
+@keyframes float{
     from{transform:translateY(0);}
-    to{transform:translateY(-10px);}
+    to{transform:translateY(-12px);}
 }
 
-/* 📊 Score Board */
+/* Scoreboard */
 #scoreBoard{
     position:absolute;
-    top:15px;
-    left:15px;
-    font-size:18px;
-    background:rgba(0,0,0,0.3);
-    padding:8px 12px;
-    border-radius:8px;
-    z-index:3;
+    top:20px;
+    left:20px;
+    padding:12px 18px;
+    border-radius:15px;
+    background:rgba(255,255,255,0.15);
+    backdrop-filter:blur(10px);
+    color:white;
+    font-weight:bold;
+    box-shadow:0 8px 20px rgba(0,0,0,0.2);
 }
 
-/* 🏠 Home Button */
+/* Home Button */
 .home-btn{
     position:absolute;
-    top:15px;
-    right:15px;
-    padding:8px 12px;
+    top:20px;
+    right:20px;
+    padding:10px 15px;
     border:none;
-    border-radius:6px;
+    border-radius:10px;
     background:#ff9800;
     color:white;
+    font-weight:bold;
     cursor:pointer;
-    z-index:3;
-    transition:0.2s;
+    box-shadow:0 5px 15px rgba(0,0,0,0.3);
 }
 
 .home-btn:hover{
@@ -115,51 +113,54 @@ body{
 </head>
 
 <body>
-<h1>👸 Jumping Queen </h1>
+
+<h1 style="text-align:center;color:white;">👑 Jumping Queen</h1>
 <button class="home-btn" onclick="location.href='index.html'">🏠 Home</button>
+
 <div id="game">
 <div id="background"></div>
-<div id="player">👩‍🚀</div>
+<div id="player">👸</div>
 <div id="ground"></div>
 <div id="scoreBoard"></div>
-
 </div>
 
-<audio id="jumpSound" src="https://www.soundjay.com/buttons/sounds/button-16.mp3"></audio>
-<audio id="coinSound" src="https://www.soundjay.com/buttons/sounds/button-4.mp3"></audio>
-<audio id="hitSound" src="https://www.soundjay.com/buttons/sounds/button-10.mp3"></audio>
+<!-- Sounds -->
+<audio id="jumpSound" src="https://assets.mixkit.co/sfx/preview/mixkit-quick-jump-arcade-game-239.mp3"></audio>
+<audio id="coinSound" src="https://assets.mixkit.co/sfx/preview/mixkit-coin-win-notification-1992.mp3"></audio>
+<audio id="hitSound" src="https://assets.mixkit.co/sfx/preview/mixkit-player-hit-2052.mp3"></audio>
+<audio id="gameOverSound" src="https://assets.mixkit.co/sfx/preview/mixkit-arcade-retro-game-over-213.mp3"></audio>
 
 <script>
 let player=document.getElementById("player");
+
 let score=0;
 let coins=0;
-let lives=3;
+let lives=5;
 let level=1;
 let speed=5;
-let highScore=localStorage.getItem("queenHighScore")||0;
-let isJumping=false;
-let isInvincible=false;
 
-player.style.bottom="60px";
+let velocity=0;
+let gravity=0.8;
+let position=200;
+
+let jumpCount=0;
+let maxJumps=3; // DOUBLE JUMP
+
+let highScore=localStorage.getItem("queenHighScore")||0;
 
 function updateBoard(){
 document.getElementById("scoreBoard").innerText=
-"🏆 Score: "+score+
-" | 💎 Coins: "+coins+
-" | ❤️ Lives: "+lives+
-" | 🧠 Level: "+level+
-" | 👑 High: "+highScore;
+"🏆 "+score+" | 💎 "+coins+
+" | ❤️ "+lives+" | 🧠 "+level+
+" | 👑 "+highScore;
 }
 
-function isColliding(a,b){
-let aRect=a.getBoundingClientRect();
-let bRect=b.getBoundingClientRect();
-return !(
-aRect.top>bRect.bottom ||
-aRect.bottom<bRect.top ||
-aRect.right<bRect.left ||
-aRect.left>bRect.right
-);
+function jump(){
+if(jumpCount<maxJumps){
+velocity=15;
+jumpCount++;
+document.getElementById("jumpSound").play();
+}
 }
 
 document.addEventListener("keydown",e=>{
@@ -167,53 +168,37 @@ if(e.code==="Space") jump();
 });
 document.addEventListener("touchstart",jump);
 
-function jump(){
-if(isJumping) return;
-isJumping=true;
-document.getElementById("jumpSound").play();
-let up=0;
+function gameLoop(){
+velocity-=gravity;
+position+=velocity;
 
-let jumpUp=setInterval(()=>{
-if(up>=140){
-clearInterval(jumpUp);
-let down=setInterval(()=>{
-if(up<=0){
-clearInterval(down);
-isJumping=false;
-}
-up-=5;
-player.style.bottom=220+up+"px";
-},20);
-}
-up+=5;
-player.style.bottom=220+up+"px";
-},20);
+if(position<=200){
+position=200;
+velocity=0;
+jumpCount=0;
 }
 
-function takeDamage(){
-if(isInvincible) return;
-isInvincible=true;
-lives--;
-document.getElementById("hitSound").play();
-updateBoard();
+player.style.bottom=position+"px";
+requestAnimationFrame(gameLoop);
+}
+gameLoop();
 
-let blink=setInterval(()=>{
-player.style.opacity=player.style.opacity==0.3?1:0.3;
-},200);
-
-setTimeout(()=>{
-clearInterval(blink);
-player.style.opacity=1;
-isInvincible=false;
-},1500);
-
-if(lives<=0) gameOver();
+function isColliding(a,b){
+let aRect=a.getBoundingClientRect();
+let bRect=b.getBoundingClientRect();
+return !(aRect.top>bRect.bottom ||
+aRect.bottom<bRect.top ||
+aRect.right<bRect.left ||
+aRect.left>bRect.right);
 }
 
+/* MULTI HEIGHT OBSTACLES */
 function createObstacle(){
 let obs=document.createElement("div");
 obs.classList.add("obstacle");
 obs.innerText="👾";
+let randomHeight=[200,250,300];
+obs.style.bottom=randomHeight[Math.floor(Math.random()*3)]+"px";
 document.getElementById("game").appendChild(obs);
 
 let move=setInterval(()=>{
@@ -243,6 +228,7 @@ function createCoin(){
 let coin=document.createElement("div");
 coin.classList.add("coin");
 coin.innerText="💎";
+coin.style.bottom=(250+Math.random()*120)+"px";
 document.getElementById("game").appendChild(coin);
 
 let move=setInterval(()=>{
@@ -264,44 +250,30 @@ clearInterval(move);
 },20);
 }
 
-function createBoss(){
-let boss=document.createElement("div");
-boss.classList.add("boss");
-boss.innerText="🐲";
-document.getElementById("game").appendChild(boss);
+function takeDamage(){
+lives--;
+document.getElementById("hitSound").play();
+updateBoard();
 
-let move=setInterval(()=>{
-let right=parseInt(boss.style.right||0);
-boss.style.right=right+(speed+2)+"px";
-
-if(isColliding(player,boss)){
-boss.remove();
-clearInterval(move);
-takeDamage();
-}
-
-if(right>window.innerWidth){
-boss.remove();
-clearInterval(move);
-}
-},20);
+if(lives<=0) gameOver();
 }
 
 function gameOver(){
+document.getElementById("gameOverSound").play();
+
 if(score>highScore){
 localStorage.setItem("queenHighScore",score);
 }
-alert("👑 Game Over!\nScore: "+score+"\nCoins: "+coins);
+setTimeout(()=>{
+alert("👑 Game Over!\nScore: "+score);
 location.reload();
+},800);
 }
 
 updateBoard();
 
-setInterval(createObstacle,2000);
-setInterval(createCoin,3000);
-setInterval(()=>{
-if(level>=3) createBoss();
-},8000);
+setInterval(createObstacle,1800);
+setInterval(createCoin,2500);
 
 </script>
 
