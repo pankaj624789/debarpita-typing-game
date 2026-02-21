@@ -76,10 +76,21 @@ button{
 <script>
 const canvas = document.getElementById("game");
 const ctx = canvas.getContext("2d");
-// 🔊 SOUND SYSTEM
-const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+// 🔊 SOUND SYSTEM (Mobile Safe)
+let audioCtx;
+
+function initAudio(){
+    if(!audioCtx){
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    }
+    if(audioCtx.state === "suspended"){
+        audioCtx.resume();
+    }
+}
 
 function playSound(frequency, duration, type="sine"){
+    if(!audioCtx) return;
+
     const oscillator = audioCtx.createOscillator();
     const gainNode = audioCtx.createGain();
 
@@ -210,6 +221,9 @@ function quitGame() {
     window.location.href = "index.html";
   }
 }
+
+document.body.addEventListener("touchstart", initAudio, { once: true });
+document.body.addEventListener("click", initAudio, { once: true });
 
 </script>
 
