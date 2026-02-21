@@ -62,12 +62,10 @@ button{
 <canvas id="game" width="400" height="400"></canvas>
 <div class="mobile-controls">
     <div></div>
-    <button ontouchstart="changeDirection('up')">⬆</button>
-    <div></div>
-
-    <button ontouchstart="changeDirection('left')">⬅</button>
-    <button ontouchstart="changeDirection('down')">⬇</button>
-    <button ontouchstart="changeDirection('right')">➡</button>
+<button onclick="changeDirection('up')">⬆</button>
+<button onclick="changeDirection('left')">⬅</button>
+<button onclick="changeDirection('down')">⬇</button>
+<button onclick="changeDirection('right')">➡</button>
 </div>
 <br>
 <button onclick="restartGame()">Restart</button>
@@ -112,6 +110,12 @@ function playSound(frequency, duration, type="sine"){
 const box = 20;
 let snake, food, direction, score, game, speed;
 
+function changeDirection(dir){
+    if(dir==="up" && direction!=="down") direction="up";
+    if(dir==="down" && direction!=="up") direction="down";
+    if(dir==="left" && direction!=="right") direction="left";
+    if(dir==="right" && direction!=="left") direction="right";
+}
 function initGame(){
     snake = [{x:200,y:200}];
     direction = null;
@@ -131,12 +135,7 @@ function randomFood(){
     };
 }
 
-document.addEventListener("keydown",(e)=>{
-    if(e.key==="ArrowUp" && direction!=="down") direction="up";
-    if(e.key==="ArrowDown" && direction!=="up") direction="down";
-    if(e.key==="ArrowLeft" && direction!=="right") direction="left";
-    if(e.key==="ArrowRight" && direction!=="left") direction="right";
-});
+
 
 function drawCircle(x,y,color,radius=9){
     ctx.fillStyle=color;
