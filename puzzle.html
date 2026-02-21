@@ -6,7 +6,9 @@
 
   <!-- Confetti Library -->
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
-
+  <audio id="winSound">
+  <source src="https://assets.mixkit.co/sfx/preview/mixkit-winning-chimes-2015.mp3" type="audio/mpeg">
+ </audio> 
   <style>
     body {
       text-align: center;
@@ -63,7 +65,50 @@
       font-size: 14px;
       margin: 5px;
     }
+/* Hint Button - Blue */
+.hint-btn {
+  background-color: #2196f3;
+}
+.hint-btn:hover {
+  background-color: #1976d2;
+  transform: scale(1.05);
+}
 
+/* Submit Button - Green */
+.submit-btn {
+  background-color: #4caf50;
+}
+.submit-btn:hover {
+  background-color: #388e3c;
+  transform: scale(1.05);
+}
+
+/* Reset Button - Orange */
+.reset-btn {
+  background-color: #ff9800;
+}
+.reset-btn:hover {
+  background-color: #f57c00;
+  transform: scale(1.05);
+}
+
+/* Change Image Button - Purple */
+.change-btn {
+  background-color: #9c27b0;
+}
+.change-btn:hover {
+  background-color: #7b1fa2;
+  transform: scale(1.05);
+}
+
+/* Quit Button - Red */
+.quit-btn {
+  background-color: #f44336;
+}
+.quit-btn:hover {
+  background-color: #d32f2f;
+  transform: scale(1.05);
+}
     #hintImage {
       display: none;
       width: 200px;
@@ -97,11 +142,11 @@
 </button>
 <button onclick="toggleMusic()">🎵 Music</button>
 
-<button onclick="toggleHint()">Hint (-10)</button>
-<button onclick="submitGame()">Submit</button>
-<button onclick="resetGame()">Reset</button>
-<button onclick="changeImage()">Change Image</button>
-<button onclick="quitGame()">Quit</button>
+<button class="hint-btn" onclick="toggleHint()">Hint (-10)</button>
+<button class="submit-btn" onclick="submitGame()">Submit</button>
+<button class="reset-btn" onclick="resetGame()">Reset</button>
+<button class="change-btn" onclick="changeImage()">Change Image</button>
+<button class="quit-btn" onclick="quitGame()">Quit</button>
 
 <div class="container">
   <div id="puzzle"></div>
@@ -119,7 +164,7 @@ const scoreDisplay = document.getElementById("score");
 const timerDisplay = document.getElementById("timer");
 const highScoreDisplay = document.getElementById("highScore");
 const bgMusic = document.getElementById("bgMusic");
-
+const winSound = document.getElementById("winSound");
 let currentImage = "https://picsum.photos/320";
 let tiles = [];
 let gridSize = 2;
@@ -318,6 +363,31 @@ function resetGame() {
     tile.dataset.currentIndex = i;
     tile.style.border = "none";
   });
+}
+
+function winGame(){
+    clearInterval(timerInterval);
+    document.getElementById("winSound").play();
+
+    let score=Math.max(1000 - (moves*10 + seconds*5),100);
+    let best=localStorage.getItem("bestScore")||0;
+
+    if(score>best){
+        localStorage.setItem("bestScore",score);
+        document.getElementById("best").innerText=score;
+    }
+
+    document.getElementById("result").innerText=
+    `Time: ${seconds}s | Moves: ${moves} | Score: ${score}`;
+
+    document.getElementById("winModal").classList.add("active");
+
+    confetti({particleCount:150,spread:100});
+}
+
+function restartGame(){
+    document.getElementById("winModal").classList.remove("active");
+    startGame();
 }
 
 function quitGame() {
