@@ -109,14 +109,67 @@ body{
 .home-btn:hover{
     transform:scale(1.1);
 }
+
+/* Game Over Overlay */
+#gameOverScreen{
+    position:fixed;
+    top:0;
+    left:0;
+    width:100%;
+    height:100%;
+    background:rgba(0,0,0,0.7);
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    visibility:hidden;
+    opacity:0;
+    transition:0.3s;
+    z-index:100;
+    pointer-events:none;
+}
+
+#gameOverScreen.show{
+visibility:visible;
+opacity:1;
+pointer-events:auto;
+}
+.game-over-box{
+    background:white;
+    padding:30px;
+    border-radius:20px;
+    text-align:center;
+    box-shadow:0 10px 30px rgba(0,0,0,0.4);
+    animation:pop 0.4s ease;
+}
+
+.game-over-box h2{
+    margin-top:0;
+    color:#e91e63;
+}
+
+.game-over-box button{
+    padding:10px 20px;
+    border:none;
+    border-radius:10px;
+    background:#4caf50;
+    color:white;
+    font-size:16px;
+    cursor:pointer;
+}
+
+@keyframes pop{
+    from{transform:scale(0.6);}
+    to{transform:scale(1);}
+}
 </style>
 </head>
+
 
 <body>
 
 <h1 style="text-align:center;color:white;">👑 Jumping Queen</h1>
 <button class="home-btn" onclick="location.href='index.html'">🏠 Home</button>
-
+<button onclick="restartGame()">🔄 Restart</button>
 <div id="game">
 <div id="background"></div>
 <div id="player">👸</div>
@@ -125,17 +178,35 @@ body{
 </div>
 
 <!-- Sounds -->
-<audio id="jumpSound" src="https://assets.mixkit.co/sfx/preview/mixkit-quick-jump-arcade-game-239.mp3"></audio>
-<audio id="coinSound" src="https://assets.mixkit.co/sfx/preview/mixkit-coin-win-notification-1992.mp3"></audio>
-<audio id="hitSound" src="https://assets.mixkit.co/sfx/preview/mixkit-player-hit-2052.mp3"></audio>
-<audio id="gameOverSound" src="https://assets.mixkit.co/sfx/preview/mixkit-arcade-retro-game-over-213.mp3"></audio>
+<!-- Sounds -->
+<audio id="jumpSound" src="jump.mp3"></audio>
+<audio id="coinSound" src="coin.mp3"></audio>
+<audio id="hitSound" src="hit.mp3"></audio>
+<audio id="gameOverSound" src="gameover.mp3"></audio>
+
 
 <script>
+
+let audioUnlocked = false;
+
+function unlockAudio() {
+    if (audioUnlocked) return;
+    document.querySelectorAll("audio").forEach(a => {
+        a.play().then(()=>{
+            a.pause();
+            a.currentTime = 0;
+        }).catch(()=>{});
+    });
+    audioUnlocked = true;
+}
+document.addEventListener("click", unlockAudio);
+document.addEventListener("touchstart", unlockAudio);
+
 let player=document.getElementById("player");
 
 let score=0;
 let coins=0;
-let lives=5;
+let lives=3;
 let level=1;
 let speed=5;
 
@@ -144,9 +215,13 @@ let gravity=0.8;
 let position=200;
 
 let jumpCount=0;
-let maxJumps=3; // DOUBLE JUMP
+let maxJumps=3;
 
 let highScore=localStorage.getItem("queenHighScore")||0;
+
+let isGameOver=false;
+let obstacleInterval;
+let coinInterval;
 
 function updateBoard(){
 document.getElementById("scoreBoard").innerText=
@@ -156,10 +231,14 @@ document.getElementById("scoreBoard").innerText=
 }
 
 function jump(){
+if(isGameOver) return;
+
 if(jumpCount<maxJumps){
 velocity=15;
 jumpCount++;
-document.getElementById("jumpSound").play();
+let s=document.getElementById("jumpSound");
+s.currentTime=0;
+s.play().catch(()=>{});
 }
 }
 
@@ -169,6 +248,8 @@ if(e.code==="Space") jump();
 document.addEventListener("touchstart",jump);
 
 function gameLoop(){
+
+
 velocity-=gravity;
 position+=velocity;
 
@@ -192,16 +273,26 @@ aRect.right<bRect.left ||
 aRect.left>bRect.right);
 }
 
-/* MULTI HEIGHT OBSTACLES */
 function createObstacle(){
+if(isGameOver) return;
+
 let obs=document.createElement("div");
 obs.classList.add("obstacle");
 obs.innerText="👾";
+
 let randomHeight=[200,250,300];
 obs.style.bottom=randomHeight[Math.floor(Math.random()*3)]+"px";
+
 document.getElementById("game").appendChild(obs);
 
 let move=setInterval(()=>{
+
+if(isGameOver){
+clearInterval(move);
+obs.remove();
+return;
+}
+
 let right=parseInt(obs.style.right||0);
 obs.style.right=right+speed+"px";
 
@@ -221,23 +312,36 @@ speed+=1;
 }
 updateBoard();
 }
+
 },20);
 }
 
 function createCoin(){
+if(isGameOver) return;
+
 let coin=document.createElement("div");
 coin.classList.add("coin");
 coin.innerText="💎";
 coin.style.bottom=(250+Math.random()*120)+"px";
+
 document.getElementById("game").appendChild(coin);
 
 let move=setInterval(()=>{
+
+if(isGameOver){
+clearInterval(move);
+coin.remove();
+return;
+}
+
 let right=parseInt(coin.style.right||0);
 coin.style.right=right+speed+"px";
 
 if(isColliding(player,coin)){
 coins++;
-document.getElementById("coinSound").play();
+let s=document.getElementById("coinSound");
+s.currentTime=0;
+s.play().catch(()=>{});
 coin.remove();
 clearInterval(move);
 updateBoard();
@@ -247,35 +351,73 @@ if(right>window.innerWidth){
 coin.remove();
 clearInterval(move);
 }
+
 },20);
 }
 
 function takeDamage(){
+if(isGameOver) return;
+
 lives--;
-document.getElementById("hitSound").play();
+
+let s=document.getElementById("hitSound");
+s.currentTime=0;
+s.play().catch(()=>{});
+
 updateBoard();
 
-if(lives<=0) gameOver();
+if(lives<=0){
+gameOver();
+}
 }
 
 function gameOver(){
-document.getElementById("gameOverSound").play();
+
+isGameOver=true;
+
+clearInterval(obstacleInterval);
+clearInterval(coinInterval);
 
 if(score>highScore){
+highScore=score;
 localStorage.setItem("queenHighScore",score);
 }
-setTimeout(()=>{
-alert("👑 Game Over!\nScore: "+score);
+
+let s=document.getElementById("gameoverSound");
+s.currentTime=0;
+s.play().catch(()=>{});
+
+// Show custom game over screen
+document.getElementById("finalScore").innerText =
+"🏆 Score: " + score + " | 💎 Coins: " + coins;
+
+document.getElementById("finalHighScore").innerText =
+"👑 High Score: " + highScore;
+
+let screen = document.getElementById("gameOverScreen");
+screen.classList.add("show");
+}
+
+function restartGame(){
 location.reload();
-},800);
 }
 
 updateBoard();
 
-setInterval(createObstacle,1800);
-setInterval(createCoin,2500);
+obstacleInterval=setInterval(createObstacle,1800);
+coinInterval=setInterval(createCoin,2500);
 
 </script>
+
+<!-- GAME OVER SCREEN -->
+<div id="gameOverScreen">
+    <div class="game-over-box">
+        <h2>👑 Game Over</h2>
+        <p id="finalScore"></p>
+        <p id="finalHighScore"></p>
+        <button onclick="restartGame()">🔄 Restart</button>
+    </div>
+</div>
 
 </body>
 </html>
