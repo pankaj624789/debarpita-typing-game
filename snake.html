@@ -29,6 +29,29 @@ button{
     background:#ff9800;
     color:white;
 }
+
+.mobile-controls{
+    margin-top:20px;
+    display:grid;
+    grid-template-columns: repeat(3, 70px);
+    gap:10px;
+    justify-content:center;
+}
+
+.mobile-controls button{
+    width:70px;
+    height:70px;
+    font-size:26px;
+    border:none;
+    border-radius:12px;
+    background:#ff9800;
+    color:white;
+    box-shadow:0 4px 8px rgba(0,0,0,0.3);
+}
+
+.mobile-controls button:active{
+    background:#e68900;
+}
 </style>
 </head>
 
@@ -37,6 +60,15 @@ button{
 <h1>🐍 Real Snake Game</h1>
 <div id="score">Score: 0</div>
 <canvas id="game" width="400" height="400"></canvas>
+<div class="mobile-controls">
+    <div></div>
+    <button ontouchstart="changeDirection('up')">⬆</button>
+    <div></div>
+
+    <button ontouchstart="changeDirection('left')">⬅</button>
+    <button ontouchstart="changeDirection('down')">⬇</button>
+    <button ontouchstart="changeDirection('right')">➡</button>
+</div>
 <br>
 <button onclick="restartGame()">Restart</button>
 <button onclick="quitGame()">Quit</button>
