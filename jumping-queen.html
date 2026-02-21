@@ -169,7 +169,7 @@ pointer-events:auto;
 
 <h1 style="text-align:center;color:white;">👑 Jumping Queen</h1>
 <button class="home-btn" onclick="location.href='index.html'">🏠 Home</button>
-<button onclick="restartGame()">🔄 Restart</button>
+
 <div id="game">
 <div id="background"></div>
 <div id="player">👸</div>
@@ -383,7 +383,7 @@ highScore=score;
 localStorage.setItem("queenHighScore",score);
 }
 
-let s=document.getElementById("gameoverSound");
+let s=document.getElementById("gameOverSound");
 s.currentTime=0;
 s.play().catch(()=>{});
 
