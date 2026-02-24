@@ -55,6 +55,58 @@ button{
     background:#222;
     color:white;
 }
+
+.launch-btn {
+    padding: 15px 40px;
+    font-size: 20px;
+    font-weight: bold;
+    color: #fff;
+    background: linear-gradient(45deg, #0f2027, #203a43, #2c5364);
+    border: 2px solid #00f2ff;
+    border-radius: 50px;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    transition: 0.3s ease-in-out;
+    box-shadow: 0 0 15px #00f2ff, 0 0 30px #00f2ff inset;
+    animation: glow 2s infinite alternate;
+}
+
+/* Hover Effect */
+.launch-btn:hover {
+    transform: scale(1.1);
+    box-shadow: 0 0 25px #00f2ff, 0 0 50px #00f2ff inset;
+}
+
+/* Click Effect */
+.launch-btn:active {
+    transform: scale(0.95);
+}
+
+/* Rocket Floating Animation */
+.launch-btn::after {
+    content: "🚀";
+    position: absolute;
+    right: 15px;
+    animation: floatRocket 1.5s infinite ease-in-out;
+}
+
+/* Glow Animation */
+@keyframes glow {
+    from {
+        box-shadow: 0 0 10px #00f2ff, 0 0 20px #00f2ff inset;
+    }
+    to {
+        box-shadow: 0 0 25px #00f2ff, 0 0 40px #00f2ff inset;
+    }
+}
+
+/* Rocket Movement */
+@keyframes floatRocket {
+    0% { transform: translateY(0); }
+    50% { transform: translateY(-5px); }
+    100% { transform: translateY(0); }
+}
 </style>
 
 
@@ -71,8 +123,10 @@ button{
 
 
 <div id="menu" class="menu">
-    <h1>🚀 Brain Galaxy</h1>
-    <button onclick="startGame()">Start Game</button>
+    <h1> Galaxy Saviors</h1>
+    <button class="launch-btn" onclick="startGame()">
+  🚀 Launch Mission
+</button>
 </div>
 
 <canvas id="game"></canvas>
