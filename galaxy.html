@@ -100,14 +100,15 @@ let powerUps = [];
 let boss = null;
 let bossBullets = [];
 let sounds = {};
-
 let player = {
     x: canvas.width / 2,
     y: canvas.height - 100,
-    size: 25,
+    size: 35,
     speed: 6,
     shield: false
 };
+
+let playerImg = new Image();
 
 function resetGame(){
     score = 0;
@@ -131,15 +132,35 @@ function startGame(){
 }
 
 function drawPlayer(){
-    ctx.beginPath();
-    ctx.fillStyle= player.shield ? "#00ffff" : "#00f2ff";
-    ctx.moveTo(player.x,player.y-player.size);
-    ctx.lineTo(player.x-player.size,player.y+player.size);
-    ctx.lineTo(player.x+player.size,player.y+player.size);
-    ctx.closePath();
-    ctx.fill();
-}
 
+    if(playerImg.complete){
+        ctx.drawImage(
+            playerImg,
+            player.x - player.size,
+            player.y - player.size,
+            player.size * 2,
+            player.size * 2
+        );
+    } else {
+        // fallback shape if image not loaded
+        ctx.beginPath();
+        ctx.fillStyle = "#00f2ff";
+        ctx.moveTo(player.x, player.y - player.size);
+        ctx.lineTo(player.x - player.size, player.y + player.size);
+        ctx.lineTo(player.x + player.size, player.y + player.size);
+        ctx.closePath();
+        ctx.fill();
+    }
+
+    // Shield effect
+    if(player.shield){
+        ctx.beginPath();
+        ctx.strokeStyle="cyan";
+        ctx.lineWidth=3;
+        ctx.arc(player.x,player.y,player.size+5,0,Math.PI*2);
+        ctx.stroke();
+    }
+}
 function shoot(){
     sounds.shoot.currentTime = 0;
     sounds.shoot.play();
@@ -373,8 +394,8 @@ canvas.addEventListener("touchstart",shoot);
 sounds.shoot = new Audio("https://actions.google.com/sounds/v1/alarms/beep_short.ogg");
 sounds.explosion = new Audio("https://actions.google.com/sounds/v1/explosions/explosion.ogg");
 sounds.power = new Audio("https://actions.google.com/sounds/v1/cartoon/clang_and_wobble.ogg");
-
+playerImg.src = "player.png";
 gameLoop();
 </script>
 </body>
-</html>
+</html> 
