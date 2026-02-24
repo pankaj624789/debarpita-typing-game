@@ -109,6 +109,7 @@ let player = {
 };
 
 let playerImg = new Image();
+let enemyImg = new Image();
 
 function resetGame(){
     score = 0;
@@ -177,7 +178,7 @@ function spawnEnemy(){
     enemies.push({
         x:Math.random()*canvas.width,
         y:-20,
-        size:20+Math.random()*15,
+        size:25+Math.random()*15,
         speed:2+level*0.5
     });
 }
@@ -327,12 +328,25 @@ function draw(){
         ctx.fillRect(b.x-2,b.y,4,10);
     });
 
-    ctx.fillStyle="red";
     enemies.forEach(e=>{
+
+    if(enemyImg.complete){
+        ctx.drawImage(
+            enemyImg,
+            e.x - e.size,
+            e.y - e.size,
+            e.size * 2,
+            e.size * 2
+        );
+    } else {
+        // fallback red circle
+        ctx.fillStyle="red";
         ctx.beginPath();
         ctx.arc(e.x,e.y,e.size,0,Math.PI*2);
         ctx.fill();
-    });
+    }
+
+});
 
     ctx.fillStyle="lime";
     powerUps.forEach(p=>{
@@ -395,6 +409,8 @@ sounds.shoot = new Audio("https://actions.google.com/sounds/v1/alarms/beep_short
 sounds.explosion = new Audio("https://actions.google.com/sounds/v1/explosions/explosion.ogg");
 sounds.power = new Audio("https://actions.google.com/sounds/v1/cartoon/clang_and_wobble.ogg");
 playerImg.src = "player.png";
+enemyImg.src = "enemy.png";
+
 gameLoop();
 </script>
 </body>
