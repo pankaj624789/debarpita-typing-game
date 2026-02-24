@@ -151,17 +151,22 @@ button{
 
 
 <div class="hud">
+    👤 <span id="playerDisplay">Guest</span>
     ❤️ <span id="lives">3</span>
     🏆 <span id="score">0</span>
     🎯 Level <span id="level">1</span>
+    👑 High: <span id="highScoreBoard">0</span>
 </div>
 
 
 <div id="menu" class="menu">
     <h1> Galaxy Saviors</h1>
+
+    <input type="text" id="playerName" placeholder="Enter Your Name">
+
     <button class="launch-btn" onclick="startGame()">
-  🚀 Launch Mission
-</button>
+        🚀 Launch Mission
+    </button>
 </div>
 
 <canvas id="game"></canvas>
@@ -195,6 +200,12 @@ let player = {
 
 let playerImg = new Image();
 let enemyImg = new Image();
+let playerName = "Guest";
+
+let highScore = localStorage.getItem("galaxyHighScore") || 0;
+let highScorePlayer = localStorage.getItem("galaxyHighScorePlayer") || "None";
+
+document.getElementById("highScoreBoard").innerText = highScore;
 
 function resetGame(){
     score = 0;
@@ -212,6 +223,17 @@ function resetGame(){
 }
 
 function startGame(){
+
+    let inputField = document.getElementById("playerName");
+
+    // Only read name if input exists (first launch)
+    if(inputField){
+        let inputName = inputField.value.trim();
+        if(inputName !== "") playerName = inputName;
+    }
+
+    document.getElementById("playerDisplay").innerText = playerName;
+
     document.getElementById("menu").style.display="none";
     gameState="playing";
     resetGame();
@@ -454,6 +476,14 @@ function drawStars(){
 }
 
 function gameOver(){
+    if(score > highScore){
+    highScore = score;
+    highScorePlayer = playerName;
+
+    localStorage.setItem("galaxyHighScore", highScore);
+    localStorage.setItem("galaxyHighScorePlayer", highScorePlayer);
+    document.getElementById("highScoreBoard").innerText = highScore;
+}
     gameState = "menu";
 
     let menu = document.getElementById("menu");
@@ -464,8 +494,9 @@ function gameOver(){
 
     menu.innerHTML = `
         <div class="gameover-box">
-            <h1 class="gameover-title">💀 GAME OVER</h1>
+            <h1 class="gameover-title"> Well Done Captain ${playerName} 🚀</h1>
             <p class="final-score">Score: ${score}</p>
+            <p class="final-score">👑 Best: Captain ${highScorePlayer} (${highScore})</p>
             <button class="launch-btn" onclick="startGame()">Restart</button>
         </div>
     `;
